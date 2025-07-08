@@ -99,7 +99,7 @@ class PostmanExporter
                 return [
                     'key' => $key,
                     'value' => $value['value'],
-                    'type' => self::postmanType(gettype($value['type'] ?? $value['value'])),
+                    'type' => self::postmanType($value['type'] ?? gettype($value['value'])),
                     'description' => $value['description'] ?? '',
                 ];
             }

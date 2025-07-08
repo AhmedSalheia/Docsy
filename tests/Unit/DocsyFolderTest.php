@@ -13,7 +13,7 @@ class DocsyFolderTest extends TestCase
         //TODO:
     }
 
-    public function testAdd()
+    public function test__Add()
     {
         //TODO:
     }

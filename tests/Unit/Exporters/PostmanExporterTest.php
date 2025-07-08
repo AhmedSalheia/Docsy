@@ -10,7 +10,7 @@ class PostmanExporterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testTransformVariablesSimple()
+    public function test__TransformVariablesSimple()
     {
         $variables = [
             'base_url' => 'https://api.test',
@@ -32,7 +32,7 @@ class PostmanExporterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testTransformVariablesStructured()
+    public function test__TransformVariablesStructured()
     {
         $variables = [
             'api_key' => [

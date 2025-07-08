@@ -7,32 +7,32 @@ use PHPUnit\Framework\TestCase;
 
 class DocsyCollectionTest extends TestCase
 {
-    public function makeNewCollection()
+    public function test__makeNewCollection()
     {
         //TODO:
     }
 
-    public function addContent()
+    public function test__addContent()
     {
         //TODO:
     }
 
-    public function addSingleVariable()
+    public function test__addSingleVariable()
     {
         //TODO:
     }
 
-    public function addMultipleVariables()
+    public function test__addMultipleVariables()
     {
         //TODO:
     }
 
-    public function getVariable()
+    public function test__getVariable()
     {
         //TODO:
     }
 
-    public function getAllVariables()
+    public function test__getAllVariables()
     {
         //TODO:
     }

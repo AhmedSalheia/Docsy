@@ -7,9 +7,9 @@ use Ahmedsalheia\Docsy\DocsyFolder;
 
 trait HasParent
 {
-    private DocsyCollection | DocsyFolder $parent;
+    private DocsyCollection | DocsyFolder | null $parent = null;
 
-    public function getParent(): DocsyCollection | DocsyFolder
+    public function getParent(): DocsyCollection | DocsyFolder | null
     {
         return $this->parent;
     }

@@ -2,37 +2,64 @@
 
 namespace Ahmedsalheia\Docsy\Tests\Unit;
 
+use Ahmedsalheia\Docsy\Docsy;
+use Ahmedsalheia\Docsy\DocsyCollection;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 class DocsyTest extends TestCase
 {
-    public function addDefaultCollection()
+    #[Test]
+    public function test__getCollection(): void
     {
-        //TODO:
+        $docsy = (new Docsy())->addCollection('Named_Collection');
+
+        $this->assertInstanceOf(DocsyCollection::class, $docsy->collection('Named_Collection'));
+    }
+    #[Test]
+    public function test__addDefaultCollection(): void
+    {
+        $default_collection_name = config('docsy.default_collection.name');
+        $docsy = new Docsy();
+
+        $this->assertInstanceOf(Docsy::class, $docsy);
+        $this->assertInstanceOf(DocsyCollection::class, $docsy->collection());
+        $this->assertArrayHasKey($default_collection_name, $docsy->collections());
+
     }
 
-    public function addNamedCollection()
+    #[Test]
+    public function test__addNamedCollection(): void
     {
-        //TODO:
+        $docsy = (new Docsy())->addCollection('Named_Collection');
+
+        $this->assertArrayHasKey('Named_Collection', $docsy->collections());
     }
 
-    public function addDublicatedCollection()
+    #[Test]
+    public function test__addDuplicatedCollection(): void
     {
-        //TODO:
+        $docsy = (new Docsy())->addCollection('Named_Collection');
+
+        $this->assertCount(2, $docsy->collections());
     }
 
-    public function getCollection()
+    #[Test]
+    public function test__returnNullOnNotExistingCollection(): void
     {
-        //TODO:
+        $docsy = new Docsy();
+
+        $this->assertNull($docsy->collection('NotExisting_Collection'));
     }
 
-    public function throwExceptionOnNotExistingCollection()
+    public function test__getAllCollections(): void
     {
-        //TODO:
-    }
+        $default_collection_name = config('docsy.default_collection.name');
+        $docsy = (new Docsy())->addCollection('Named_Collection');
 
-    public function getAllCollections()
-    {
-        //TODO:
+        $this->assertIsArray($docsy->collections());
+        $this->assertCount(2, $docsy->collections());
+        $this->assertInstanceOf(DocsyCollection::class, array_values($docsy->collections())[0]);
+        $this->assertArrayHasKey($default_collection_name, $docsy->collections());
     }
 }
