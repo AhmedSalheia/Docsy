@@ -1,0 +1,39 @@
+1. Unit Tests
+Focus: Individual classes and their methods (logic correctness, edge cases).
+
+e. Exporters
+For example, PostmanExporter
+
+Test transformVariables() with simple and structured variables.
+
+Test exporting a collection with requests and folders to Postman format.
+
+Edge cases: empty collections, nested folders.
+
+Later, when OpenAPI exporter added, similar tests.
+
+2. Integration Tests
+Focus: The package working as a whole or with Laravel framework.
+
+Test bootstrapping the package (via service provider).
+
+Test reading Laravel routes and auto-generating documentation.
+
+Test environment variables propagate correctly.
+
+Test exported JSON is valid Postman collection schema.
+
+Test importing/exporting collections (if implemented).
+
+Test error handling on invalid inputs.
+
+3. Feature / Functional Tests
+(May require Laravel Testbench or real Laravel app)
+
+Test UI components if you build an API explorer/browser.
+
+Test route testing interface (if you provide that).
+
+Test authentication headers or variables are applied in requests.
+
+Test saving/loading Postman collections via UI (if any).

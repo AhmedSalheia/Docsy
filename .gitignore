@@ -1,0 +1,17 @@
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+
+/vendor
+/exports
+/future
+/.phpunit.cache
+.DS_Store
+
+logs
+*.log
+
+composer.lock
+.phpunit.result.cache
