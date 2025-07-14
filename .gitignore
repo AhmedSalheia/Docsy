@@ -6,6 +6,7 @@
 
 /vendor
 /exports
+/examples
 /future
 /.phpunit.cache
 .DS_Store
@@ -15,3 +16,5 @@ logs
 
 composer.lock
 .phpunit.result.cache
+
+show.php

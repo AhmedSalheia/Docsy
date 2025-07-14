@@ -19,8 +19,8 @@ class DocsyRequestTest extends TestCase
         $this->assertEquals("Get User Date", $request->name);
         $this->assertEquals("Get Logged In User Data", $request->description);
         $this->assertNull($request->getParent());
-        $this->assertIsArray($request->headers);
-        $this->assertArrayHasKey('Authorization', $request->headers);
+        $this->assertIsArray($request->headerParams);
+        $this->assertArrayHasKey('Authorization', $request->headerParams);
         $this->assertIsArray($request->queryParams);
         $this->assertArrayHasKey('sort', $request->queryParams);
         $this->assertInstanceOf(DocsyParam::class, $request->queryParams['sort']);

@@ -4,8 +4,11 @@ namespace Ahmedsalheia\Docsy\Exporters;
 
 use Ahmedsalheia\Docsy\DocsyCollection;
 use Ahmedsalheia\Docsy\DocsyFolder;
+use Ahmedsalheia\Docsy\DocsyParam;
 use Ahmedsalheia\Docsy\DocsyRequest;
-class PostmanExporter
+use Ahmedsalheia\Docsy\Enums\ParamLocation;
+
+class PostmanExporter extends AbstractExporter
 {
     public static function export(DocsyCollection $collection): array
     {
@@ -17,7 +20,7 @@ class PostmanExporter
                 'version' => $collection->version,
             ],
             'variable' => self::transformVariables($collection->getVariables()),
-            'item' => self::transformContent($collection->content),
+            'item' => self::transformContent($collection->content()),
         ];
     }
 
@@ -32,7 +35,7 @@ class PostmanExporter
                 return [
                     'name' => $item->name,
                     'description' => $item->description,
-                    'item' => self::transformContent($item->content),
+                    'item' => self::transformContent($item->content()),
                 ];
             }
 
@@ -42,25 +45,47 @@ class PostmanExporter
 
     protected static function transformRequest(DocsyRequest $request): array
     {
+        if ($request->requires_auth)
+            $request->headerParams['Authorization'] = DocsyParam::fromArray([
+                'name' => 'Authorization',
+                'example' => "{$request->auth_scheme} {$request->auth_token_placeholder}",
+                'required' => true,
+                 'description' => 'Authorization header',
+            ],ParamLocation::Header, $request);
+
         return [
             'name' => $request->name,
             'description' => $request->description,
             'request' => [
-                'method' => strtoupper($request->method),
-                'header' => array_map(fn($k, $v) => ['key' => $k, 'value' => $v], array_keys($request->headers), $request->headers),
-                'url' => self::transformUrl($request->uri, $request->queryParams),
-                'body' => self::transformBody($request->body),
+                'method' => strtoupper($request->method->value),
+                'header' => array_map(
+                    fn($header) => ['key' => $header->name, 'value' => $header->example, 'description' => $header->description],
+                    $request->headerParams
+                ),
+                'url' => self::transformUrl($request->uri, $request->queryParams, $request->pathParams),
+                'body' => self::transformBody($request->bodyParams),
             ],
         ];
     }
 
-    protected static function transformUrl(string $uri, array $params): array
+    protected static function transformUrl(string $uri, array $queryParams, array $urlParams): array
     {
         $cleanUri = ltrim($uri, '/');
+        $pathParts = explode('/', $cleanUri);
+
+        // Map urlParams (DocsyParam[]) to variable array
+        $variables = array_map(fn($param) => [
+            'key' => $param->name,
+            'value' => $param->example ?? '',
+            'description' => $param->description,
+            'required' => $param->required,
+        ], $urlParams);
+
         return [
             'raw' => '{{base_url}}/' . $cleanUri,
             'host' => ['{{base_url}}'],
-            'path' => explode('/', $cleanUri),
+            'path' => $pathParts,
+            'variable' => $variables,
             'query' => array_map(
                 fn($param) => [
                     'key' => $param->name,
@@ -68,23 +93,27 @@ class PostmanExporter
                     'type' => self::postmanType($param->type ?: gettype($param->example)),
                     'description' => $param->description,
                     'required' => $param->required,
-                ]
-                , $params),
+                ],
+                $queryParams
+            ),
         ];
     }
 
     protected static function transformBody(array $body): array
     {
-        if (empty($body)) return [];
+        if (empty($body)) {
+            return [];
+        }
 
         return [
-            'mode' => 'raw',
-            'raw' => json_encode($body, JSON_PRETTY_PRINT),
-            'options' => [
-                'raw' => [
-                    'language' => 'json',
-                ],
-            ],
+            'mode' => 'formdata',
+            'formdata' => array_map(fn($param) => [
+                'key' => $param->name,
+                'value' => (string) $param->example,
+                'type' => 'text',
+                'description' => $param->description,
+                'disabled' => !$param->required,
+            ], $body),
         ];
     }
 

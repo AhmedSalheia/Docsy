@@ -6,4 +6,10 @@ enum ParamLocation: string {
     case Header = 'header';
     case Cookie = 'cookie';
     case Body = 'body';
+
+    public static function get($location): self
+    {
+        $locations = array_filter(self::cases(), fn($location_obj) => strtolower($location) === $location_obj->value);
+        return array_shift($locations);
+    }
 }

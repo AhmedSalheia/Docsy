@@ -2,9 +2,7 @@
 
 namespace Ahmedsalheia\Docsy\traits;
 
-use Ahmedsalheia\Docsy\DocsyFolder;
 use Ahmedsalheia\Docsy\DocsyParam;
-use Ahmedsalheia\Docsy\DocsyRequest;
 use Ahmedsalheia\Docsy\Enums\ParamLocation;
 
 trait HasGlobals
@@ -24,8 +22,8 @@ trait HasGlobals
     public function setGlobals(array $globals): static
     {
         $this->globals = $globals;
-        if (!empty($this->content)) {
-            foreach ($this->content as $content) {
+        if (!empty($this->content())) {
+            foreach ($this->content() as $content) {
                 $content->setGlobals($globals);
             }
         }
@@ -35,9 +33,9 @@ trait HasGlobals
     {
         return $key? $this->globals[$key] : $this->globals;
     }
-    public function addGlobalHeader($header, $value): static
+    public function addGlobalHeader($header, $value, string $description = '', bool $required = false): static
     {
-        $this->globals['headers'][$header] = $value;
+        $this->globals['headers'][$header] = new DocsyParam($header, ParamLocation::Header, $description, required: $required, example: $value);
         return $this;
     }
     public function addGlobalQueryParam($query, $value, string $description = '', bool $required = false): static
