@@ -16,7 +16,8 @@ return [
             "username" => env('DOCSY_DEFAULT_AUTH_USERNAME'),
             "password" => env('DOCSY_DEFAULT_AUTH_PASSWORD')
         ],
-        "token_path" => env('DOCSY_TOKEN_PATH',"data.path"),
+        "token_path" => env('DOCSY_TOKEN_PATH',"data.access_token"),
+        "token_variable_name" => env('DOCSY_TOKEN_VARIABLE_NAME', 'access_token'),
         "auto_run" => env('DOCSY_AUTO_RUN',true),
     ],
 
