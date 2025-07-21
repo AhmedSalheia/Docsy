@@ -2,16 +2,16 @@
 
 namespace Docsy;
 
-use Docsy\Enums\HTTPMethod;
-use Docsy\Enums\ParamLocation;
-use Docsy\Support\Example;
-use Docsy\Support\Param;
-use Docsy\Traits\ArrayJsonSerialization;
-use Docsy\Traits\HasExamples;
-use Docsy\Traits\HasID;
-use Docsy\Traits\HasMeta;
-use Docsy\Traits\HasParams;
-use Docsy\Traits\HasParent;
+use Docsy\Utility\Enums\HTTPMethod;
+use Docsy\Utility\Enums\ParamLocation;
+use Docsy\Utility\Example;
+use Docsy\Utility\Param;
+use Docsy\Utility\Traits\ArrayJsonSerialization;
+use Docsy\Utility\Traits\HasExamples;
+use Docsy\Utility\Traits\HasID;
+use Docsy\Utility\Traits\HasMeta;
+use Docsy\Utility\Traits\HasParams;
+use Docsy\Utility\Traits\HasParent;
 use GuzzleHttp\Exception\GuzzleException;
 use InvalidArgumentException;
 use JsonSerializable;

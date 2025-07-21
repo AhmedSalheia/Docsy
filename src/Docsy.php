@@ -2,12 +2,11 @@
 
 namespace Docsy;
 
-use Docsy\Exporters\AbstractExporter;
-use Docsy\Exporters\JsonExporter;
-use Docsy\Importers\AbstractImporter;
-use Docsy\Traits\ArrayJsonSerialization;
-use Docsy\Traits\HasCollections;
-use Docsy\Traits\HasMeta;
+use Docsy\Utility\Exporters\AbstractExporter;
+use Docsy\Utility\Importers\AbstractImporter;
+use Docsy\Utility\Traits\ArrayJsonSerialization;
+use Docsy\Utility\Traits\HasCollections;
+use Docsy\Utility\Traits\HasMeta;
 use Exception;
 
 class Docsy implements \JsonSerializable
