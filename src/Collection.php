@@ -139,6 +139,7 @@ class Collection implements JsonSerializable
         return [
             'id' => $this->id,
             'class_name' => basename(get_class($this)),
+            'meta' => $this->meta,
             'name' => $this->name,
             'description' => $this->description,
             'version' => $this->version,
@@ -164,6 +165,6 @@ class Collection implements JsonSerializable
             $class = $content['class_name'] === 'Folder' ? Folder::fromArray($content) : Request::fromArray($content);
             $class->setParent($collection);
         }
-        return $collection;
+        return $collection->setMeta($array['meta'] ?? '');
     }
 }

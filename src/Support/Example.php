@@ -302,6 +302,7 @@ class Example implements JsonSerializable
         return [
             'id' => $this->id,
             'class_name' => basename(get_class($this)),
+            'meta' => $this->meta,
             'name' => $this->name,
             'description' => $this->description,
             'request' => $this->request,
@@ -322,6 +323,7 @@ class Example implements JsonSerializable
         )
             ->setParent($parent)
             ->setID($array['id']??null)
-            ->is_disabled($array['disabled']??false);
+            ->is_disabled($array['disabled']??false)
+            ->setMeta($array['meta']??null);
     }
 }

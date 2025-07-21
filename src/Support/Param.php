@@ -70,6 +70,7 @@ class Param implements \JsonSerializable
         return [
             'id' => $this->id,
             'class_name' => basename(get_class($this)),
+            'meta' => $this->meta,
             'name' => $this->name,
             'in' => $this->in->value,
             'description' => $this->description,
@@ -91,7 +92,8 @@ class Param implements \JsonSerializable
         )
             ->setParent($parent)
             ->setID($array['id']??null)
-            ->is_disabled($array['disabled']??false);
+            ->is_disabled($array['disabled']??false)
+            ->setMeta($array['meta'] ?? '');
     }
 
     public static function fromArrayCollection($parent, ParamLocation $in, ...$objects) : array

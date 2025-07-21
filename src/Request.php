@@ -247,6 +247,7 @@ class Request implements JsonSerializable
         return [
             'id' => $this->id,
             'class_name' => basename(get_class($this)),
+            'meta' => $this->meta,
             'method' => $this->method,
             'scheme' => $this->scheme,
             'uri' => $this->uri,
@@ -281,7 +282,8 @@ class Request implements JsonSerializable
             ->setGlobals()
             ->setID($array['id']??null)
             ->setExamples($array['examples']??[])
-            ->asAuth($array['is_auth'] ?? true);
+            ->asAuth($array['is_auth'] ?? true)
+            ->setMeta($array['meta']??[]);
     }
 
 }
