@@ -2,11 +2,11 @@
 
 namespace Docsy;
 
-use Docsy\Traits\ArrayJsonSerialization;
-use Docsy\Traits\HasContent;
-use Docsy\Traits\HasID;
-use Docsy\Traits\HasMeta;
-use Docsy\Traits\HasParent;
+use Docsy\Utility\Traits\ArrayJsonSerialization;
+use Docsy\Utility\Traits\HasContent;
+use Docsy\Utility\Traits\HasID;
+use Docsy\Utility\Traits\HasMeta;
+use Docsy\Utility\Traits\HasParent;
 
 class Folder implements \JsonSerializable
 {

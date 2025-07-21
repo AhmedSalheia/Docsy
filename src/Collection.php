@@ -2,15 +2,15 @@
 
 namespace Docsy;
 
-use Docsy\Enums\ParamLocation;
-use Docsy\Exporters\AbstractExporter;
-use Docsy\Support\Param;
-use Docsy\Traits\ArrayJsonSerialization;
-use Docsy\Traits\HasContent;
-use Docsy\Traits\HasGlobals;
-use Docsy\Traits\HasID;
-use Docsy\Traits\HasMeta;
-use Docsy\Traits\HasVariables;
+use Docsy\Utility\Enums\ParamLocation;
+use Docsy\Utility\Exporters\AbstractExporter;
+use Docsy\Utility\Param;
+use Docsy\Utility\Traits\ArrayJsonSerialization;
+use Docsy\Utility\Traits\HasContent;
+use Docsy\Utility\Traits\HasGlobals;
+use Docsy\Utility\Traits\HasID;
+use Docsy\Utility\Traits\HasMeta;
+use Docsy\Utility\Traits\HasVariables;
 use Exception;
 use JsonSerializable;
 

@@ -1,5 +1,7 @@
 <?php
 
+use Docsy\Docsy;
+
 if (!function_exists('config')) {
     function config($key, $default = null) {
         $keys = explode('.', $key);
@@ -45,5 +47,12 @@ if (!function_exists('dd')) {
         echo '</pre>';
 
         exit();
+    }
+}
+
+if (!function_exists('docsy')) {
+    function docsy(Docsy $docsy_instance = null): Docsy
+    {
+        return $docsy_instance ?? Docsy::getInstance();
     }
 }

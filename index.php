@@ -5,7 +5,7 @@ require __DIR__ . '/vendor/autoload.php';
 use Docsy\Docsy;
 use Docsy\Folder;
 use Docsy\Request;
-use Docsy\Enums\ParamLocation;
+use Docsy\Utility\Enums\ParamLocation;
 
 $docsy = Docsy::getInstance();
 

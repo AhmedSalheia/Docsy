@@ -23,14 +23,14 @@ return [
 
     "formatters" => [
         "exporters" => [
-            "json" => \Docsy\Exporters\JsonExporter::class,
-            "postman" => \Docsy\Exporters\PostmanExporter::class,
-            "openapi.json" => \Docsy\Exporters\openAPI\JsonExporter::class,
-            "openapi.yaml" => \Docsy\Exporters\openAPI\YamlExporter::class,
-            "openapi.yml" => \Docsy\Exporters\openAPI\YamlExporter::class,
+            "json" => \Docsy\Utility\Exporters\JsonExporter::class,
+            "postman" => \Docsy\Utility\Exporters\PostmanExporter::class,
+            "openapi.json" => \Docsy\Utility\Exporters\openAPI\JsonExporter::class,
+            "openapi.yaml" => \Docsy\Utility\Exporters\openAPI\YamlExporter::class,
+            "openapi.yml" => \Docsy\Utility\Exporters\openAPI\YamlExporter::class,
         ],
         "importers" => [
-            "json" => \Docsy\Importers\JsonImporter::class,
+            "json" => \Docsy\Utility\Importers\JsonImporter::class,
         ]
     ]
 ];
