@@ -33,3 +33,17 @@ if (!function_exists('dump')) {
         echo '</pre>';
     }
 }
+
+if (!function_exists('dd')) {
+    function dd(...$data) {
+        echo '<pre>';
+
+        foreach ($data as $datum) {
+            print_r($datum);
+        }
+
+        echo '</pre>';
+
+        exit();
+    }
+}

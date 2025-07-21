@@ -21,7 +21,7 @@ class Request implements JsonSerializable
 
     public HTTPMethod $method;
 
-    public string $scheme;
+    public ?string $scheme;
     public string $uri;
     public array $path;
 
@@ -29,8 +29,7 @@ class Request implements JsonSerializable
     public string $description = '';
 
     public bool $requires_auth = false;
-    public ?string $auth_scheme = 'Bearer';
-    public ?string $auth_token_placeholder = '{{token}}';
+    public bool $is_auth = false;
 
     public ?Collection $collection = null;
 
@@ -52,10 +51,9 @@ class Request implements JsonSerializable
 
         $this->requires_auth = $requires_auth;
 
-        $urlData = preg_split('/:\/\//', $uri, -1, PREG_SPLIT_NO_EMPTY);
-        $this->scheme = $urlData[0] ?? null;
+        $this->scheme = parse_url($uri,PHP_URL_SCHEME) ?? null;
 
-        $urlData = preg_split('/\?([^}:])/', $urlData[1] ?? $uri, -1, PREG_SPLIT_NO_EMPTY);
+        $urlData = preg_split('/\?([^}:])/', $uri, -1, PREG_SPLIT_NO_EMPTY);
         $this->uri = $urlData[0];
 
         $this->path = $this->getPath($this->uri);
@@ -84,17 +82,21 @@ class Request implements JsonSerializable
 
     public function setGlobals(): static
     {
-        if ($this->getCollection())
+        if ($this->collection())
         {
-            $globals = $this->getCollection()?->globals();
+            $globals = $this->collection()?->globals();
 
-            $this->headerParams = array_merge($this->headerParams, $globals['headers'] ?? []);
+            $this->headerParams = array_merge($this->headerParams, $globals['header'] ?? []);
             $this->bodyParams = array_merge($this->bodyParams, $globals['body'] ?? []);
             $this->queryParams = array_merge($this->queryParams, $globals['query'] ?? []);
         }
         return $this;
     }
-    public function getCollection(): ?Collection
+
+    /**
+     * @throws \Exception
+     */
+    public function collection(): ?Collection
     {
         if ($this->collection !== null)
             return $this->collection;
@@ -103,9 +105,14 @@ class Request implements JsonSerializable
 
         while ($parent !== null) {
             if ($parent instanceof Collection) {
+
                 $this->collection = $parent;
-                $this->setGlobals();
                 $this->scheme = preg_split('/:\/\//', $parent->baseUrl, -1, PREG_SPLIT_NO_EMPTY)[0];
+                $this->setGlobals();
+
+                if($this->is_auth && !$this->collection->hasAuth())
+                    $this->collection->setAuth($this);
+
                 return $this->collection;
             }
             $parent = $parent->getParent();
@@ -113,14 +120,18 @@ class Request implements JsonSerializable
 
         return null;
     }
+
+    /**
+     * @throws \Exception
+     */
     public function getBaseUrl(): ?string
     {
-        return $this->getCollection()?->baseUrl;
+        return $this->collection()?->baseUrl;
     }
     private function getPath($uri): array
     {
         // clear scheme if exists:
-        $uriWithoutScheme = str_replace(['http://', 'https://'],'', $uri);
+        $uriWithoutScheme = trim(str_replace(['http://', 'https://'],'', $uri), '/');
         $pathData = explode('/', $uriWithoutScheme);
 
         // adding path params
@@ -153,6 +164,18 @@ class Request implements JsonSerializable
             }
         }
     }
+    // Auth:
+
+    /**
+     * @throws \Exception
+     */
+    public function asAuth(bool $is_auth = true): static
+    {
+        $this->is_auth = $is_auth;
+        $this->requires_auth = $is_auth ? false : $this->requires_auth;
+        return $this;
+    }
+
     private function stripExampleRequest() : static
     {
         return (new Request(
@@ -171,7 +194,7 @@ class Request implements JsonSerializable
     /**
      * @throws GuzzleException
      */
-    public function snapExample(string $label, bool $force = false, string $description = '', array $data = null): static
+    public function snap(string $label, bool $force = false, string $description = '', array $data = null): static
     {
         $this->setGlobals();
         $request = $this->stripExampleRequest();
@@ -207,7 +230,7 @@ class Request implements JsonSerializable
         $this->setGlobals();
         $request = $this->stripExampleRequest();
 
-        return (new Example($request,"Default Runner"))->setParent($this)->run(noCache: true);
+        return (new Example($request,"Default Runner"))->setParent($this)->run(force: true, noCache: true);
     }
 
     public function toArray(): array
@@ -234,9 +257,14 @@ class Request implements JsonSerializable
             'bodyParams' => $serializeParams($this->bodyParams),
             'headerParams' => $serializeParams($this->headerParams),
             'requires_auth' => $this->requires_auth,
+            'is_auth' => $this->is_auth,
             'examples' => array_map(fn($e) => $e->toArray(), $this->examples),
         ];
     }
+
+    /**
+     * @throws \Exception
+     */
     public static function fromArray(array $array, $parent = null): static
     {
         return (new self($array['method'],
@@ -251,7 +279,8 @@ class Request implements JsonSerializable
             ->setParent($parent)
             ->setGlobals()
             ->setID($array['id']??null)
-            ->setExamples($array['examples']??[]);
+            ->setExamples($array['examples']??[])
+            ->asAuth($array['is_auth'] ?? true);
     }
 
 }

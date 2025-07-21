@@ -13,10 +13,11 @@ return [
     "auth" => [
         "scheme" => env('DOCSY_AUTH_SCHEME','bearer'),
         "default_credentials" => [
-            "username" => env('DOCSY_DEFAULT_AUTH_USERNAME'),
-            "password" => env('DOCSY_DEFAULT_AUTH_PASSWORD')
+            "username" => env('DOCSY_DEFAULT_AUTH_USERNAME','user@slimapp.com'),
+            "password" => env('DOCSY_DEFAULT_AUTH_PASSWORD','1234')
         ],
-        "token_path" => env('DOCSY_TOKEN_PATH',"data.path"),
+        "token_variable_name" => env('DOCSY_TOKEN_VARIABLE_NAME','access_token'),
+        "token_path" => env('DOCSY_TOKEN_PATH',"data.access_token"),
         "auto_run" => env('DOCSY_AUTO_RUN',true),
     ],
 

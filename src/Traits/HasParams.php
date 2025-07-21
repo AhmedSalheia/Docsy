@@ -21,22 +21,30 @@ trait HasParams
     {
         return $this->{$paramLocation->value . 'Params'};
     }
-    public function hasParam(ParamLocation $paramLocation,$name_or_id) : bool
+    public function hasParam(ParamLocation $paramLocation, string | Param | array $name_or_id) : bool
     {
+        $name_or_id = is_a($name_or_id, Param::class) ?
+            $name_or_id->id :
+            (
+                is_array($name_or_id) ?
+                    $name_or_id['name'] :
+                    $name_or_id
+            );
+
         return isset($this->getParamsArray($paramLocation)[$name_or_id]) || $this->hasParamName($paramLocation, $name_or_id);
     }
-    public function hasParamName(ParamLocation $paramLocation,$name_or_id) : bool
+    public function hasParamName(ParamLocation $paramLocation,$name) : bool
     {
-        $params = array_filter($this->getParamsArray($paramLocation), fn ($param) => $param->name === $name_or_id);
+        $params = array_filter($this->getParamsArray($paramLocation), fn ($param) => $param->name === $name);
         return count($params) > 0;
     }
 
-    private function getParamByName(ParamLocation $paramLocation, $name_or_id, int $index = 0) : Param
+    private function getParamByName(ParamLocation $paramLocation, $name, int $index = 0) : Param
     {
-        if (!$this->hasParam($paramLocation, $name_or_id))
-            throw new \InvalidArgumentException("{$name_or_id} Param doesn\'t exist");
+        if (!$this->hasParam($paramLocation, $name))
+            throw new \InvalidArgumentException("{$name} Param doesn\'t exist");
 
-        $params = array_filter($this->getParamsArray($paramLocation), fn ($param) => $param->name === $name_or_id);
+        $params = array_filter($this->getParamsArray($paramLocation), fn ($param) => $param->name === $name);
         if ($index < count($params))
             return array_values($params)[$index];
 
@@ -46,10 +54,10 @@ trait HasParams
             );
 
     }
-    public function getParam(ParamLocation $paramLocation,$name_or_id) : Param
+    public function getParam(ParamLocation $paramLocation,string $name_or_id) : Param
     {
         if (!$this->hasParam($paramLocation, $name_or_id))
-            throw new \InvalidArgumentException("{$name_or_id} Param doesn\'t exist");
+            throw new \InvalidArgumentException("{$name_or_id} Param doesn\'t exist in " . static::class);
 
         return $this->hasParamName($paramLocation, $name_or_id) ?
             $this->getParamByName($paramLocation, $name_or_id):
@@ -68,6 +76,14 @@ trait HasParams
     }
     public function addParam(ParamLocation $paramLocation, string | Param| array $param, string $description = '', bool $required = false, mixed $value = null) : static
     {
+        if ($this->hasParamName($paramLocation,$param_name = is_array($param) ? $param['name'] : (is_string($param) ? $param : $param->name)))
+        {
+            $param = $this->getParamByName($paramLocation, $param_name);
+            $param->description = $description ?: $param->description;
+            $param->required = $required ?: $param->required;
+            $param->value = $value ?? $param->value;
+        }
+
         if (is_a($param, Param::class)) {
             $param->in = $paramLocation;
             $this->{$paramLocation->value . 'Params'}[$param->id] = $param->setParent($this);

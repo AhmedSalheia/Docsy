@@ -19,13 +19,13 @@ trait HasExamples
         $this->examples[$example->id] = $example;
         return $this;
     }
-    public function getExampleByName(string $example_name): Example
+    public function getExampleByName(string $example_name): ?Example
     {
         $examples = array_filter($this->examples, function ($item) use ($example_name) {
             return $item->name === $example_name;
         });
 
-        return array_shift($examples);
+        return $examples ? array_shift($examples) : null;;
     }
     public function getExample(string $example_name_or_id = ''): Example | null
     {
