@@ -82,6 +82,9 @@ trait HasContent
         return count($items) == 1 ? array_shift($items) : $items;
     }
 
+    /**
+     * @throws \Exception
+     */
     public function flatten(string $class_name): array
     {
         if ($class_name === '')

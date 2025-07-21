@@ -86,12 +86,16 @@ class Request implements JsonSerializable
         {
             $globals = $this->collection()?->globals();
 
-            $this->headerParams = array_merge($this->headerParams, $globals['headers'] ?? []);
+            $this->headerParams = array_merge($this->headerParams, $globals['header'] ?? []);
             $this->bodyParams = array_merge($this->bodyParams, $globals['body'] ?? []);
             $this->queryParams = array_merge($this->queryParams, $globals['query'] ?? []);
         }
         return $this;
     }
+
+    /**
+     * @throws \Exception
+     */
     public function collection(): ?Collection
     {
         if ($this->collection !== null)
@@ -116,6 +120,10 @@ class Request implements JsonSerializable
 
         return null;
     }
+
+    /**
+     * @throws \Exception
+     */
     public function getBaseUrl(): ?string
     {
         return $this->collection()?->baseUrl;
@@ -123,7 +131,7 @@ class Request implements JsonSerializable
     private function getPath($uri): array
     {
         // clear scheme if exists:
-        $uriWithoutScheme = str_replace(['http://', 'https://'],'', $uri);
+        $uriWithoutScheme = trim(str_replace(['http://', 'https://'],'', $uri), '/');
         $pathData = explode('/', $uriWithoutScheme);
 
         // adding path params
@@ -253,6 +261,10 @@ class Request implements JsonSerializable
             'examples' => array_map(fn($e) => $e->toArray(), $this->examples),
         ];
     }
+
+    /**
+     * @throws \Exception
+     */
     public static function fromArray(array $array, $parent = null): static
     {
         return (new self($array['method'],

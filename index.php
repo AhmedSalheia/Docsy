@@ -56,15 +56,14 @@ $docsy->getCollection()
     );
 
 // check auth flow:
-//dump($auth->collection());
-//dump($requires_auth_req->run()->response);
+dump($requires_auth_req->run()->response);
 
 // getting collections by id, name or chain
 //$userFolders = array_keys($docsy->getCollection()->get('User'));
 //dump($docsy->getCollection()->get($userFolders[0] . '.Auth.Login'));
 
 // summarizing the docsy app:
-dump($docsy->summary());
+//dump($docsy->summary());
 
 // exporting:
 //$docsy->export('json', true);

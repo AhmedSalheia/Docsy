@@ -67,6 +67,10 @@ class Collection implements JsonSerializable
         $this->auth = null;
         return $this;
     }
+
+    /**
+     * @throws Exception
+     */
     public function getAuth(): ?Request
     {
         if (is_null($this->auth))
@@ -84,7 +88,7 @@ class Collection implements JsonSerializable
         return $this->auth;
     }
 
-    public function getAuthToken(): ?string
+    public function getAccessToken(): ?string
     {
         if ($this->hasVariable(config('docsy.auth.token_variable_name')))
             return $this->getVariable(config('docsy.auth.token_variable_name'))->value;

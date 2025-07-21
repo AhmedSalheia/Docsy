@@ -11,6 +11,7 @@ use Docsy\Traits\HasParent;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException;
 use JsonSerializable;
 use stdClass;
 
@@ -24,7 +25,7 @@ class Example implements JsonSerializable
     public string $description;
     public string $file = '';
 
-    public int $excuted_at;
+    public int $execute_at;
     public int $response_time;
 
     public function __construct(?Request $request, string $name, string $description = '', stdClass $response = null)
@@ -33,21 +34,21 @@ class Example implements JsonSerializable
         $this->request = $request->setParent($this);
         $this->name = $name;
         $this->description = $description;
-        $this->response = $response;
+        $this->setResponse($response);
     }
-    public function setResponse(stdClass | array $response): static
+    public function setResponse(stdClass | array | null $response): static
     {
-        if (is_array($response)) {
-            $arr = $response;
-            $response = new stdClass();
-            $response->status = $arr['status'];
-            $response->status_code = $arr['status_code'];
-            $response->headers = $arr['headers'];
-            $response->body = $arr['body'];
-        }
-        $this->response = $response;
+        $this->response = $this->getResponseClass($response);
         return $this;
     }
+
+    public function getResponseClass(stdClass | array | null $response): ?stdClass
+    {
+        if (!$response) return null;
+
+        return is_object($response) ? $response : (object)$response;
+    }
+
     private function file(): string
     {
         if ($this->file !== '') return $this->file;
@@ -63,6 +64,7 @@ class Example implements JsonSerializable
 
     /**
      * @throws GuzzleException
+     * @throws Exception
      */
     public function run(bool $force = false, bool $noCache = false): static
     {
@@ -74,29 +76,42 @@ class Example implements JsonSerializable
             return $this;
         }
 
+
+        $is_auth_request = $this->request->id === $this->request->collection()?->getAuth()?->id;
+
+        if ($is_auth_request)
+            $this->prepareAuthParams();
+
         // execute request
-        $request = $this->buildHttpRequest();
-        $this->excuted_at = time();
-        $response = $this->sendHttpRequest($request);
+        $this->execute();
 
-        if ($response->code === 401 && config('docsy.auth.auto_run') && !$this->request->is_auth)
+        if ($this->response->code === 401 && config('docsy.auth.auto_run') && !$is_auth_request)
         {
-            $this->runAuth();
-            $response = $this->sendHttpRequest($request);
+            if(!$this->request->collection()->hasAuth())
+                throw new Exception("No Auth Request Registered For {$this->request->collection()->name} Collection");
+
+            $auth = $this->request->collection()->getAuth();
+            $auth->run();
+
+            $this->execute();
         }
-
-        $this->setResponse($response);
-        $this->response_time = time() - $this->excuted_at;
-
+        if ($is_auth_request)
+        {
+            $this->checkValidAuth()->injectAccessToken($this->getAccessToken());
+        }
 
         // Cache it
         if (!$noCache) file_put_contents($this->file(), json_encode($this, JSON_PRETTY_PRINT));
 
         return $this;
     }
+
+    /**
+     * @throws Exception
+     */
     protected function buildHttpRequest(): array
     {
-        $baseUrl = str_replace(['http://','https://'], '', rtrim($this->request->getBaseUrl()??'', '/'));
+        $baseUrl = str_replace(["http://", "https://"],'',rtrim($this->request->getBaseUrl()??'', '/'));
         $url = $this->request->scheme . "://";
 
         if ($baseUrl) $url .= $baseUrl . '/';
@@ -108,17 +123,32 @@ class Example implements JsonSerializable
         }
         $url = rtrim($url, '/');
 
-        $headers = array_map(fn ($header) => $header->value, $this->request->headerParams);
+        $this->request->setGlobals();
+
+        $headers = array_merge(...array_values(array_map(fn ($header) => [$header->name => $header->value], $this->request->headerParams)));
 
         if (!empty($this->queryParams)) {
-            $query = http_build_query(array_map(fn($p) => $p->example, $this->queryParams));
+            $query = http_build_query(
+                array_merge(
+                    ...array_values(
+                        array_map(
+                            fn ($queryParam) => [$queryParam->name => $queryParam->value],
+                            $this->request->queryParams
+                        )
+                    )
+                )
+            );
             $url .= '?' . $query;
         }
 
-        $body = [];
-        array_walk($this->request->bodyParams, function ($p) use (&$body) {
-            $body[$p->name] = $p->value;
-        });
+        $body = array_merge(
+            ...array_values(
+                array_map(
+                    fn ($bodyParam) => [$bodyParam->name => $bodyParam->value],
+                    $this->request->bodyParams
+                )
+            )
+        );
 
         return [
             'method' => strtoupper($this->request->method->value),
@@ -146,16 +176,36 @@ class Example implements JsonSerializable
         try {
             $res = $client->request($request['method'], $request['url'], $options);
 
-            $return->status = $res->getReasonPhrase();
-            $return->status_code = $res->getStatusCode();
-            $return->headers = $res->getHeaders();
-            $return->body = json_decode((string)$res->getBody(), true);
+            $this->setResponse(
+                [
+                    'status' => $res->getReasonPhrase(),
+                    'code' => $res->getStatusCode(),
+                    'headers' => $res->getHeaders(),
+                    'body' => json_decode((string) $res->getBody(),true)
+                ]
+            );
 
-        } catch (Exception $e) {
-            $return->status = htmlentities($e->getMessage());
-            $return->status_code = $e->getCode();
-            $return->headers = [];
-            $return->body = null;
+        } catch (RequestException $e) {
+            if ($e->hasResponse())
+            {
+                $this->setResponse(
+                    [
+                        'status' => $e->getResponse()->getReasonPhrase(),
+                        'code' => $e->getResponse()->getStatusCode(),
+                        'headers' => $e->getResponse()->getHeaders(),
+                        'body' => json_decode((string)$e->getResponse()->getBody(), true)
+                    ]
+                );
+            } else {
+                $this->setResponse(
+                    [
+                        'status' => '',
+                        'code' => $e->getCode(),
+                        'headers' => [],
+                        'body' => htmlentities($e->getMessage())
+                    ]
+                );
+            }
         }
 
         return $return;
@@ -165,53 +215,79 @@ class Example implements JsonSerializable
      * @throws GuzzleException
      * @throws Exception
      */
-    private function runAuth() : void
+    protected function execute(): static
     {
-        if(!$this->request->collection()->hasAuth())
-            throw new Exception("No Auth Request Registered For {$this->request->collection()->name} Collection");
+        $request = $this->buildHttpRequest();
+        $this->execute_at = time();
+        $this->sendHttpRequest($request);
+        $this->setResponse($this->response);
+        $this->response_time = time() - $this->execute_at;
 
-        $access_token = $this->request->collection()->getAuthToken();
-
-        if (is_null($access_token))
-        {
-            $auth = $this->request->collection()->getAuth();
-            foreach (config('docsy.auth.default_credentials') as $key => $value) {
-                if (!$auth->hasParam(ParamLocation::Body, $key))
-                    $auth->addParam(ParamLocation::Body, $key, value: $value);
-                else
-                    $auth->editParam(ParamLocation::Body, $key, value: $value);
+        return $this;
+    }
+    protected function prepareAuthParams(): static
+    {
+        $auth = $this->request;
+        foreach (config('docsy.auth.default_credentials') as $key => $value) {
+            if (!$auth->hasParam(ParamLocation::Body, $key)) {
+                $auth->addBodyParam($key,required: true, value: $value);
             }
-
-            $response = $auth->run()->response;
-//
-//            dump($response);
-//
-//            if (is_null($response))
-//                throw new \Exception("No Auth Response Provided, Check your Auth Request {$this->request->getChain()}");
-//
-//            if ($response->code !== 200)
-//                throw new \Exception("Auth Response Returned with {$response->code} {$response->status}, Check your Auth Request {$this->request->getChain()}");
-//
-//            if (!$response->body)
-//                throw new \Exception("No Valid Response Body Provided, Check your Auth Request {$this->request->getChain()}");
-//
-//            $path = config('docsy.examples_path');
-//            $access_token = $response->body;
-//            foreach ($path as $pathPart)
-//            {
-//                $access_token = $access_token[$pathPart];
-//            }
-//
-//            $this->request->addHeaderParam('Authorization','Authorization Token Header',true,"Bearer $access_token");
-//            $this->request->collection()
-//                ->addGlobalHeader("Authorization","Bearer $access_token",'Authorization Token Header',true)
-//                ->addVariable([
-//                    'name' => config('docsy.auth.token_variable_name'),
-//                    'value' => $access_token,
-//                    'description' => 'Authorization Token'
-//                ]);
-
         }
+
+        return $this;
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function checkValidAuth() : static
+    {
+        $response = $this->response;
+        if (is_null($response))
+            throw new \Exception("No Auth Response Provided, Check your Auth Request {$this->request->getChain()}");
+
+        if ($response->code !== 200)
+            throw new \Exception("Auth Response Returned with {$response->code} {$response->status}, Check your Auth Request {$this->request->getChain()}");
+
+        if (!$response->body)
+            throw new \Exception("No Valid Response Body Provided, Check your Auth Request {$this->request->getChain()}");
+
+        return $this;
+    }
+    /**
+     * @throws Exception
+     */
+    protected function injectAccessToken($access_token): static
+    {
+        $this->request->addHeaderParam('Authorization','Authorization Token Header',true,"Bearer $access_token");
+        $this->request->collection()
+            ->addGlobalHeader("Authorization","Bearer $access_token",'Authorization Token Header',true)
+            ->addVariable([
+                'name' => config('docsy.auth.token_variable_name'),
+                'value' => $access_token,
+                'description' => 'Authorization Token'
+            ]);
+        return $this;
+    }
+    /**
+     * @throws Exception
+     */
+    protected function getAccessToken() : string
+    {
+        $response = $this->response;
+        if (is_null($response) && $this->request->id !== $this->request->collection()?->getAuth()?->id) // get from collection
+            return $this->request->collection()->getAccessToken();
+
+        $path = explode('.',config('docsy.auth.token_path'));
+        $access_token = $response->body;
+        foreach ($path as $pathPart)
+        {
+            if (array_key_exists($pathPart, $access_token))
+                $access_token = $access_token[$pathPart];
+            else
+                throw new Exception("Can't find the access token using the path [".implode('.', $path)."], [$pathPart] doesn't seem to exist");
+        }
+        return trim((string)$access_token);
     }
 
     public function destroy(): void
@@ -231,7 +307,7 @@ class Example implements JsonSerializable
             'response' => $this->response,
             'file' => $this->file,
             'disabled' => $this->disabled,
-            "executed_at" => $this->excuted_at,
+            "executed_at" => $this->execute_at,
             "response_time" => $this->response_time
         ];
     }
