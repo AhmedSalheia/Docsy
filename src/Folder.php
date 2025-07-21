@@ -5,11 +5,12 @@ namespace Docsy;
 use Docsy\Traits\ArrayJsonSerialization;
 use Docsy\Traits\HasContent;
 use Docsy\Traits\HasID;
+use Docsy\Traits\HasMeta;
 use Docsy\Traits\HasParent;
 
 class Folder implements \JsonSerializable
 {
-    use HasParent, ArrayJsonSerialization, HasID, HasContent;
+    use HasParent, ArrayJsonSerialization, HasID, HasContent, HasMeta;
 
     public string $name;
     public string $description;
@@ -27,6 +28,7 @@ class Folder implements \JsonSerializable
         return [
             'id' => $this->id,
             'class_name' => basename(get_class($this)),
+            'meta' => $this->meta,
             'name' => $this->name,
             'description' => $this->description,
             'requires_auth' => $this->requires_auth,
@@ -35,12 +37,12 @@ class Folder implements \JsonSerializable
     }
     public static function fromArray(array $array, $parent = null) : static
     {
-        $folder = new static($array['name'], $array['description']??'', $array['requires_auth']??false);
+        $folder = new static($array['name'], $array['description']??'',$array['requires_auth']??false);
 
         foreach ($array['content'] as $content) {
             $class = $content['class_name'] === 'Folder' ? Folder::fromArray($content) : Request::fromArray($content);
             $class->setParent($folder);
         }
-        return $folder->setParent($parent)->setID($array['id']??null);
+        return $folder->setParent($parent)->setID($array['id']??null)->setMeta($array['meta']??'');
     }
 }

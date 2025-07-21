@@ -9,13 +9,14 @@ use Docsy\Traits\ArrayJsonSerialization;
 use Docsy\Traits\HasContent;
 use Docsy\Traits\HasGlobals;
 use Docsy\Traits\HasID;
+use Docsy\Traits\HasMeta;
 use Docsy\Traits\HasVariables;
 use Exception;
 use JsonSerializable;
 
 class Collection implements JsonSerializable
 {
-    use HasGlobals, ArrayJsonSerialization, HasID, HasContent, HasVariables;
+    use HasGlobals, ArrayJsonSerialization, HasID, HasContent, HasVariables, HasMeta;
 
     public string $name;
     public string $description;
@@ -138,6 +139,7 @@ class Collection implements JsonSerializable
         return [
             'id' => $this->id,
             'class_name' => basename(get_class($this)),
+            'meta' => $this->meta,
             'name' => $this->name,
             'description' => $this->description,
             'version' => $this->version,
@@ -163,6 +165,6 @@ class Collection implements JsonSerializable
             $class = $content['class_name'] === 'Folder' ? Folder::fromArray($content) : Request::fromArray($content);
             $class->setParent($collection);
         }
-        return $collection;
+        return $collection->setMeta($array['meta'] ?? '');
     }
 }

@@ -7,11 +7,12 @@ use Docsy\Exporters\JsonExporter;
 use Docsy\Importers\AbstractImporter;
 use Docsy\Traits\ArrayJsonSerialization;
 use Docsy\Traits\HasCollections;
+use Docsy\Traits\HasMeta;
 use Exception;
 
 class Docsy implements \JsonSerializable
 {
-    use ArrayJsonSerialization, HasCollections;
+    use ArrayJsonSerialization, HasCollections, HasMeta;
 
     private static ?Docsy $instance;
 
@@ -129,6 +130,7 @@ class Docsy implements \JsonSerializable
     {
         return [
             'class_name' => basename(get_class($this)),
+            'meta' => $this->meta,
             'collections' => $this->collections(),
         ];
     }
@@ -137,7 +139,7 @@ class Docsy implements \JsonSerializable
     {
         $docsy = static::getInstance($force_new);
         $docsy->collections = Collection::fromArrayCollection(null, ...$array['collections']);
-
+        $docsy->setMeta($array['meta']??'');
         return $docsy;
     }
 

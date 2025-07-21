@@ -7,12 +7,13 @@ use Docsy\Enums\ParamLocation;
 use Docsy\Traits\ArrayJsonSerialization;
 use Docsy\Traits\CouldBeDisabled;
 use Docsy\Traits\HasID;
+use Docsy\Traits\HasMeta;
 use Docsy\Traits\HasParent;
 use SebastianBergmann\Diff\InvalidArgumentException;
 
 class Param implements \JsonSerializable
 {
-    use HasParent, ArrayJsonSerialization, HasID, CouldBeDisabled;
+    use HasParent, ArrayJsonSerialization, HasID, CouldBeDisabled, HasMeta;
 
     public string $name;
     public ParamLocation $in;
@@ -69,6 +70,7 @@ class Param implements \JsonSerializable
         return [
             'id' => $this->id,
             'class_name' => basename(get_class($this)),
+            'meta' => $this->meta,
             'name' => $this->name,
             'in' => $this->in->value,
             'description' => $this->description,
@@ -90,7 +92,8 @@ class Param implements \JsonSerializable
         )
             ->setParent($parent)
             ->setID($array['id']??null)
-            ->is_disabled($array['disabled']??false);
+            ->is_disabled($array['disabled']??false)
+            ->setMeta($array['meta'] ?? '');
     }
 
     public static function fromArrayCollection($parent, ParamLocation $in, ...$objects) : array
