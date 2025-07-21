@@ -3,12 +3,12 @@
 /.nova
 /.vscode
 /.zed
-/cache
 
 /vendor
 /node_modules
 /exports
 /future
+/cache
 /.phpunit.cache
 .DS_Store
 
