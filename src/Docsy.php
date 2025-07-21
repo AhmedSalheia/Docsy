@@ -7,11 +7,12 @@ use Docsy\Exporters\JsonExporter;
 use Docsy\Importers\AbstractImporter;
 use Docsy\Traits\ArrayJsonSerialization;
 use Docsy\Traits\HasCollections;
+use Docsy\Traits\HasMeta;
 use Exception;
 
 class Docsy implements \JsonSerializable
 {
-    use ArrayJsonSerialization, HasCollections;
+    use ArrayJsonSerialization, HasCollections, HasMeta;
 
     private static ?Docsy $instance;
 

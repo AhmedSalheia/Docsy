@@ -9,6 +9,7 @@ use Docsy\Support\Param;
 use Docsy\Traits\ArrayJsonSerialization;
 use Docsy\Traits\HasExamples;
 use Docsy\Traits\HasID;
+use Docsy\Traits\HasMeta;
 use Docsy\Traits\HasParams;
 use Docsy\Traits\HasParent;
 use GuzzleHttp\Exception\GuzzleException;
@@ -17,7 +18,7 @@ use JsonSerializable;
 
 class Request implements JsonSerializable
 {
-    use ArrayJsonSerialization, HasParent, HasID, HasParams, HasExamples;
+    use ArrayJsonSerialization, HasParent, HasID, HasParams, HasExamples, HasMeta;
 
     public HTTPMethod $method;
 

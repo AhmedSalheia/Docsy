@@ -7,6 +7,7 @@ use Docsy\Request;
 use Docsy\Traits\ArrayJsonSerialization;
 use Docsy\Traits\CouldBeDisabled;
 use Docsy\Traits\HasID;
+use Docsy\Traits\HasMeta;
 use Docsy\Traits\HasParent;
 use Exception;
 use GuzzleHttp\Client;
@@ -17,7 +18,7 @@ use stdClass;
 
 class Example implements JsonSerializable
 {
-    use ArrayJsonSerialization, HasParent, HasID, CouldBeDisabled;
+    use ArrayJsonSerialization, HasParent, HasID, CouldBeDisabled, HasMeta;
 
     public Request $request;
     public string $name;

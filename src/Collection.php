@@ -9,13 +9,14 @@ use Docsy\Traits\ArrayJsonSerialization;
 use Docsy\Traits\HasContent;
 use Docsy\Traits\HasGlobals;
 use Docsy\Traits\HasID;
+use Docsy\Traits\HasMeta;
 use Docsy\Traits\HasVariables;
 use Exception;
 use JsonSerializable;
 
 class Collection implements JsonSerializable
 {
-    use HasGlobals, ArrayJsonSerialization, HasID, HasContent, HasVariables;
+    use HasGlobals, ArrayJsonSerialization, HasID, HasContent, HasVariables, HasMeta;
 
     public string $name;
     public string $description;

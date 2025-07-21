@@ -5,11 +5,12 @@ namespace Docsy;
 use Docsy\Traits\ArrayJsonSerialization;
 use Docsy\Traits\HasContent;
 use Docsy\Traits\HasID;
+use Docsy\Traits\HasMeta;
 use Docsy\Traits\HasParent;
 
 class Folder implements \JsonSerializable
 {
-    use HasParent, ArrayJsonSerialization, HasID, HasContent;
+    use HasParent, ArrayJsonSerialization, HasID, HasContent, HasMeta;
 
     public string $name;
     public string $description;

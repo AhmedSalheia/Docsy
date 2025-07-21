@@ -7,12 +7,13 @@ use Docsy\Enums\ParamLocation;
 use Docsy\Traits\ArrayJsonSerialization;
 use Docsy\Traits\CouldBeDisabled;
 use Docsy\Traits\HasID;
+use Docsy\Traits\HasMeta;
 use Docsy\Traits\HasParent;
 use SebastianBergmann\Diff\InvalidArgumentException;
 
 class Param implements \JsonSerializable
 {
-    use HasParent, ArrayJsonSerialization, HasID, CouldBeDisabled;
+    use HasParent, ArrayJsonSerialization, HasID, CouldBeDisabled, HasMeta;
 
     public string $name;
     public ParamLocation $in;

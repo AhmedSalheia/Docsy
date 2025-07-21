@@ -5,11 +5,12 @@ namespace Docsy\Support;
 use Docsy\Traits\ArrayJsonSerialization;
 use Docsy\Traits\CouldBeDisabled;
 use Docsy\Traits\HasID;
+use Docsy\Traits\HasMeta;
 use Docsy\Traits\HasParent;
 
 class Variable implements \JsonSerializable
 {
-    use ArrayJsonSerialization, HasParent, HasID, CouldBeDisabled;
+    use ArrayJsonSerialization, HasParent, HasID, CouldBeDisabled, HasMeta;
 
     public string $name;
     public string $value;
