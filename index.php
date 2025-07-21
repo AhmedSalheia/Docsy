@@ -50,20 +50,21 @@ $docsy->getCollection()
             ->add(new Request('get','/api/user/data?sort=-age&filter=age,25', 'Get User Data with sorting and filters'))
             ->add(
                 (new Folder('Auth'))
-                    ->add((new Request('post','/auth','Login'))->asAuth())
-                    ->add($requires_auth_req = (new Request('get','/api/requires_auth','requires_auth')))
+                    ->add($auth = (new Request('get','/auth','auth'))->asAuth())
+                    ->add($requires_auth_req = (new Request('get','/requires_auth','requires_auth')))
             )
     );
 
 // check auth flow:
-$requires_auth_req->run();
+//dump($auth->collection());
+//dump($requires_auth_req->run()->response);
 
 // getting collections by id, name or chain
 //$userFolders = array_keys($docsy->getCollection()->get('User'));
 //dump($docsy->getCollection()->get($userFolders[0] . '.Auth.Login'));
 
 // summarizing the docsy app:
-//dump($docsy->summary());
+dump($docsy->summary());
 
 // exporting:
 //$docsy->export('json', true);

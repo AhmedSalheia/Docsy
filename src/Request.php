@@ -21,7 +21,7 @@ class Request implements JsonSerializable
 
     public HTTPMethod $method;
 
-    public string $scheme;
+    public ?string $scheme;
     public string $uri;
     public array $path;
 
@@ -51,10 +51,9 @@ class Request implements JsonSerializable
 
         $this->requires_auth = $requires_auth;
 
-        $urlData = preg_split('/:\/\//', $uri, -1, PREG_SPLIT_NO_EMPTY);
-        $this->scheme = $urlData[0] ?? null;
+        $this->scheme = parse_url($uri,PHP_URL_SCHEME) ?? null;
 
-        $urlData = preg_split('/\?([^}:])/', $urlData[1] ?? $uri, -1, PREG_SPLIT_NO_EMPTY);
+        $urlData = preg_split('/\?([^}:])/', $uri, -1, PREG_SPLIT_NO_EMPTY);
         $this->uri = $urlData[0];
 
         $this->path = $this->getPath($this->uri);
@@ -107,7 +106,7 @@ class Request implements JsonSerializable
                 $this->scheme = preg_split('/:\/\//', $parent->baseUrl, -1, PREG_SPLIT_NO_EMPTY)[0];
                 $this->setGlobals();
 
-                if($this->is_auth)
+                if($this->is_auth && !$this->collection->hasAuth())
                     $this->collection->setAuth($this);
 
                 return $this->collection;
@@ -187,7 +186,7 @@ class Request implements JsonSerializable
     /**
      * @throws GuzzleException
      */
-    public function snapExample(string $label, bool $force = false, string $description = '', array $data = null): static
+    public function snap(string $label, bool $force = false, string $description = '', array $data = null): static
     {
         $this->setGlobals();
         $request = $this->stripExampleRequest();
@@ -223,7 +222,7 @@ class Request implements JsonSerializable
         $this->setGlobals();
         $request = $this->stripExampleRequest();
 
-        return (new Example($request,"Default Runner"))->setParent($this)->run(noCache: true);
+        return (new Example($request,"Default Runner"))->setParent($this)->run(force: true, noCache: true);
     }
 
     public function toArray(): array

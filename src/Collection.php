@@ -71,12 +71,12 @@ class Collection implements JsonSerializable
     {
         if (is_null($this->auth))
         {
-            $items = $this->flatten(Request::class);
-            foreach ($items as $item)
+            $requests = $this->flatten(Request::class);
+            foreach ($requests as $request)
             {
-                if($item->is_auth) {
-                    $this->setAuth($item);
-                    return $item;
+                if($request->is_auth) {
+                    $this->setAuth($request);
+                    return $request;
                 }
             }
         }

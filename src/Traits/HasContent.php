@@ -82,34 +82,26 @@ trait HasContent
         return count($items) == 1 ? array_shift($items) : $items;
     }
 
-    public function flatten(string $class_name = ""): array
+    public function flatten(string $class_name): array
     {
-        $class_name = $class_name == "" ? "" : basename(strtolower($class_name)) . 's';
+        if ($class_name === '')
+            throw new \Exception("class_name can't be empty");
 
-        if ($class_name !== '' && !empty($this->$class_name))
-            return $this->$class_name;
+        elseif (!in_array($class_name, [Request::class, Folder::class]))
+            throw new \Exception("only [" . Request::class . ", " . Folder::class . "] are currently supported");
 
-        elseif (!empty($this->requests) && !empty($this->folders) && $class_name == '')
-            return [
-                'requests' => $this->requests,
-                'folders' => $this->folders
-            ];
+        $arr = basename(strtolower($class_name)) . 's';
 
-        else
-            foreach ($this->content as $item) {
-                if ($item instanceof Request) $this->requests[] = $item;
-                else if ($item instanceof Folder) {
-                    $this->folders[] = $item;
-                    $arr = $item->flatten();
-                    $this->requests = array_merge($this->requests, $arr['requests']);
-                    $this->folders = array_merge($this->folders, $arr['folders']);
-                }
+        foreach ($this->content as $item) {
+            if ($item instanceof Request) $this->requests[$item->id] = $item;
+            else if ($item instanceof Folder) {
+                $this->folders[$item->id] = $item;
+                $this->$arr = array_merge($this->$arr, $item->flatten($class_name));
             }
+        }
 
-        return $class_name !== '' ? $this->$class_name : [
-            'requests' => $this->requests,
-            'folders' => $this->folders
-        ];
+        return $this->$arr;
+
     }
 
     public function remove(string $id): static
@@ -145,6 +137,7 @@ trait HasContent
     {
         return $this->content;
     }
+
     public function filter(callable $callback): array
     {
         return array_filter($this->content, $callback);

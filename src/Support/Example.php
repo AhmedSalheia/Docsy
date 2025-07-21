@@ -8,22 +8,26 @@ use Docsy\Traits\ArrayJsonSerialization;
 use Docsy\Traits\CouldBeDisabled;
 use Docsy\Traits\HasID;
 use Docsy\Traits\HasParent;
+use Exception;
+use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use JsonSerializable;
+use stdClass;
 
-class Example implements \JsonSerializable
+class Example implements JsonSerializable
 {
     use ArrayJsonSerialization, HasParent, HasID, CouldBeDisabled;
 
     public Request $request;
     public string $name;
-    public ?\stdClass $response;
+    public ?stdClass $response;
     public string $description;
     public string $file = '';
 
-    public $excuted_at;
-    public $response_time;
+    public int $excuted_at;
+    public int $response_time;
 
-    public function __construct(?Request $request, string $name, string $description = '', \stdClass $response = null)
+    public function __construct(?Request $request, string $name, string $description = '', stdClass $response = null)
     {
         $this->setID();
         $this->request = $request->setParent($this);
@@ -31,11 +35,11 @@ class Example implements \JsonSerializable
         $this->description = $description;
         $this->response = $response;
     }
-    public function setResponse(\stdClass | array $response): static
+    public function setResponse(stdClass | array $response): static
     {
         if (is_array($response)) {
             $arr = $response;
-            $response = new \stdClass();
+            $response = new stdClass();
             $response->status = $arr['status'];
             $response->status_code = $arr['status_code'];
             $response->headers = $arr['headers'];
@@ -75,7 +79,7 @@ class Example implements \JsonSerializable
         $this->excuted_at = time();
         $response = $this->sendHttpRequest($request);
 
-        if ($response->code === 401 && config('docsy.auth.auto_run'))
+        if ($response->code === 401 && config('docsy.auth.auto_run') && !$this->request->is_auth)
         {
             $this->runAuth();
             $response = $this->sendHttpRequest($request);
@@ -126,9 +130,9 @@ class Example implements \JsonSerializable
     /**
      * @throws GuzzleException
      */
-    protected function sendHttpRequest(array $request): \stdClass
+    protected function sendHttpRequest(array $request): stdClass
     {
-        $client = new \GuzzleHttp\Client();
+        $client = new Client();
 
         $options = [
             'headers' => $request['headers'],
@@ -137,7 +141,7 @@ class Example implements \JsonSerializable
         if (!empty($request['body'])) {
             $options['json'] = $request['body'];
         }
-        $return = new \stdClass();
+        $return = new stdClass();
 
         try {
             $res = $client->request($request['method'], $request['url'], $options);
@@ -147,7 +151,7 @@ class Example implements \JsonSerializable
             $return->headers = $res->getHeaders();
             $return->body = json_decode((string)$res->getBody(), true);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $return->status = htmlentities($e->getMessage());
             $return->status_code = $e->getCode();
             $return->headers = [];
@@ -156,10 +160,15 @@ class Example implements \JsonSerializable
 
         return $return;
     }
+
+    /**
+     * @throws GuzzleException
+     * @throws Exception
+     */
     private function runAuth() : void
     {
         if(!$this->request->collection()->hasAuth())
-            throw new \Exception("No Auth Request Registered For {$this->request->collection()->name} Collection");
+            throw new Exception("No Auth Request Registered For {$this->request->collection()->name} Collection");
 
         $access_token = $this->request->collection()->getAuthToken();
 
@@ -174,35 +183,33 @@ class Example implements \JsonSerializable
             }
 
             $response = $auth->run()->response;
-
-            echo '<pre>Auth Response: ';
-            var_dump($response);
-            echo '</pre>';
-
-            if (is_null($response))
-                throw new \Exception("No Auth Response Provided, Check your Auth Request {$this->request->getChain()}");
-
-            if ($response->code !== 200)
-                throw new \Exception("Auth Response Returned with {$response->code} {$response->status}, Check your Auth Request {$this->request->getChain()}");
-
-            if (!$response->body)
-                throw new \Exception("No Valid Response Body Provided, Check your Auth Request {$this->request->getChain()}");
-
-            $path = config('docsy.examples_path');
-            $access_token = $response->body;
-            foreach ($path as $pathPart)
-            {
-                $access_token = $access_token[$pathPart];
-            }
-
-            $this->request->addHeaderParam('Authorization','Authorization Token Header',true,"Bearer $access_token");
-            $this->request->collection()
-                ->addGlobalHeader("Authorization","Bearer $access_token",'Authorization Token Header',true)
-                ->addVariable([
-                    'name' => config('docsy.auth.token_variable_name'),
-                    'value' => $access_token,
-                    'description' => 'Authorization Token'
-                ]);
+//
+//            dump($response);
+//
+//            if (is_null($response))
+//                throw new \Exception("No Auth Response Provided, Check your Auth Request {$this->request->getChain()}");
+//
+//            if ($response->code !== 200)
+//                throw new \Exception("Auth Response Returned with {$response->code} {$response->status}, Check your Auth Request {$this->request->getChain()}");
+//
+//            if (!$response->body)
+//                throw new \Exception("No Valid Response Body Provided, Check your Auth Request {$this->request->getChain()}");
+//
+//            $path = config('docsy.examples_path');
+//            $access_token = $response->body;
+//            foreach ($path as $pathPart)
+//            {
+//                $access_token = $access_token[$pathPart];
+//            }
+//
+//            $this->request->addHeaderParam('Authorization','Authorization Token Header',true,"Bearer $access_token");
+//            $this->request->collection()
+//                ->addGlobalHeader("Authorization","Bearer $access_token",'Authorization Token Header',true)
+//                ->addVariable([
+//                    'name' => config('docsy.auth.token_variable_name'),
+//                    'value' => $access_token,
+//                    'description' => 'Authorization Token'
+//                ]);
 
         }
     }
