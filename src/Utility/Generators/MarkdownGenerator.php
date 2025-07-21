@@ -15,7 +15,10 @@ class MarkdownGenerator extends AbstractGenerator
 
     public static function generate(Docsy $docsy, string $collection = "", array $options = []): string
     {
-        $collections = array_values(array_map(fn ($collection) => self::transformCollection($collection, $options), $docsy->collections()));
+        if ($collection !== '')
+            $collections = self::transformCollection($docsy->getCollection($collection));
+        else
+            $collections = array_values(array_map(fn ($collection) => self::transformCollection($collection, $options), $docsy->collections()));
 
         return "# API Documentation\n\n" . implode("\n___\n", $collections);
     }
