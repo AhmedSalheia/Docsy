@@ -2,6 +2,7 @@
 
 namespace Docsy\Support;
 
+use Docsy\Enums\ParamLocation;
 use Docsy\Request;
 use Docsy\Traits\ArrayJsonSerialization;
 use Docsy\Traits\CouldBeDisabled;
@@ -72,8 +73,17 @@ class Example implements \JsonSerializable
         // execute request
         $request = $this->buildHttpRequest();
         $this->excuted_at = time();
-        $this->setResponse($this->sendHttpRequest($request));
+        $response = $this->sendHttpRequest($request);
+
+        if ($response->code === 401 && config('docsy.auth.auto_run'))
+        {
+            $this->runAuth();
+            $response = $this->sendHttpRequest($request);
+        }
+
+        $this->setResponse($response);
         $this->response_time = time() - $this->excuted_at;
+
 
         // Cache it
         if (!$noCache) file_put_contents($this->file(), json_encode($this, JSON_PRETTY_PRINT));
@@ -82,14 +92,15 @@ class Example implements \JsonSerializable
     }
     protected function buildHttpRequest(): array
     {
-        $baseUrl = rtrim($this->request->getBaseUrl()??'', '/');
+        $baseUrl = str_replace(['http://','https://'], '', rtrim($this->request->getBaseUrl()??'', '/'));
         $url = $this->request->scheme . "://";
+
         if ($baseUrl) $url .= $baseUrl . '/';
 
         foreach ($this->request->path as $pathPart) {
             if (is_a($pathPart, Param::class))
                 $url .= $pathPart->value . '/';
-            else $url .= $pathPart . '/';
+            elseif(!empty($pathPart)) $url .= ltrim($pathPart, '/') . '/';
         }
         $url = rtrim($url, '/');
 
@@ -144,6 +155,56 @@ class Example implements \JsonSerializable
         }
 
         return $return;
+    }
+    private function runAuth() : void
+    {
+        if(!$this->request->collection()->hasAuth())
+            throw new \Exception("No Auth Request Registered For {$this->request->collection()->name} Collection");
+
+        $access_token = $this->request->collection()->getAuthToken();
+
+        if (is_null($access_token))
+        {
+            $auth = $this->request->collection()->getAuth();
+            foreach (config('docsy.auth.default_credentials') as $key => $value) {
+                if (!$auth->hasParam(ParamLocation::Body, $key))
+                    $auth->addParam(ParamLocation::Body, $key, value: $value);
+                else
+                    $auth->editParam(ParamLocation::Body, $key, value: $value);
+            }
+
+            $response = $auth->run()->response;
+
+            echo '<pre>Auth Response: ';
+            var_dump($response);
+            echo '</pre>';
+
+            if (is_null($response))
+                throw new \Exception("No Auth Response Provided, Check your Auth Request {$this->request->getChain()}");
+
+            if ($response->code !== 200)
+                throw new \Exception("Auth Response Returned with {$response->code} {$response->status}, Check your Auth Request {$this->request->getChain()}");
+
+            if (!$response->body)
+                throw new \Exception("No Valid Response Body Provided, Check your Auth Request {$this->request->getChain()}");
+
+            $path = config('docsy.examples_path');
+            $access_token = $response->body;
+            foreach ($path as $pathPart)
+            {
+                $access_token = $access_token[$pathPart];
+            }
+
+            $this->request->addHeaderParam('Authorization','Authorization Token Header',true,"Bearer $access_token");
+            $this->request->collection()
+                ->addGlobalHeader("Authorization","Bearer $access_token",'Authorization Token Header',true)
+                ->addVariable([
+                    'name' => config('docsy.auth.token_variable_name'),
+                    'value' => $access_token,
+                    'description' => 'Authorization Token'
+                ]);
+
+        }
     }
 
     public function destroy(): void

@@ -21,8 +21,16 @@ trait HasParams
     {
         return $this->{$paramLocation->value . 'Params'};
     }
-    public function hasParam(ParamLocation $paramLocation,$name_or_id) : bool
+    public function hasParam(ParamLocation $paramLocation, string | Param | array $name_or_id) : bool
     {
+        $name_or_id = is_a($name_or_id, Param::class) ?
+            $name_or_id->id :
+            (
+                is_array($name_or_id) ?
+                    $name_or_id['name'] :
+                    $name_or_id
+            );
+
         return isset($this->getParamsArray($paramLocation)[$name_or_id]) || $this->hasParamName($paramLocation, $name_or_id);
     }
     public function hasParamName(ParamLocation $paramLocation,$name_or_id) : bool
@@ -46,10 +54,10 @@ trait HasParams
             );
 
     }
-    public function getParam(ParamLocation $paramLocation,$name_or_id) : Param
+    public function getParam(ParamLocation $paramLocation,string $name_or_id) : Param
     {
         if (!$this->hasParam($paramLocation, $name_or_id))
-            throw new \InvalidArgumentException("{$name_or_id} Param doesn\'t exist");
+            throw new \InvalidArgumentException("{$name_or_id} Param doesn\'t exist in " . static::class);
 
         return $this->hasParamName($paramLocation, $name_or_id) ?
             $this->getParamByName($paramLocation, $name_or_id):

@@ -22,6 +22,8 @@ class Collection implements JsonSerializable
     public string $version = "1.0.0";
     public string $baseUrl;
 
+    private ?Request $auth = null;
+
     public function __construct(string $name, string $description, string $version = "1.0.0",?string $baseUrl = null)
     {
         $this->setID();
@@ -47,6 +49,56 @@ class Collection implements JsonSerializable
             'description' => 'Base URL of the API'
         ]);
         return $this;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setAuth(Request $auth): static
+    {
+        if (!is_null($this->auth) && $auth->id !== $this->auth?->id)
+            throw new Exception("Auth already set");
+
+        $this->auth = $auth;
+        return $this;
+    }
+    public function unsetAuth() : static
+    {
+        $this->auth = null;
+        return $this;
+    }
+    public function getAuth(): ?Request
+    {
+        if (is_null($this->auth))
+        {
+            $items = $this->flatten(Request::class);
+            foreach ($items as $item)
+            {
+                if($item->is_auth) {
+                    $this->setAuth($item);
+                    return $item;
+                }
+            }
+        }
+
+        return $this->auth;
+    }
+
+    public function getAuthToken(): ?string
+    {
+        if ($this->hasVariable(config('docsy.auth.token_variable_name')))
+            return $this->getVariable(config('docsy.auth.token_variable_name'))->value;
+
+        return null;
+    }
+    public function hasAuth() : bool
+    {
+        return !is_null($this->getAuth());
+    }
+
+    public function resolve(string $id_or_path)
+    {
+
     }
 
     /**
