@@ -20,7 +20,7 @@ class PostmanExporter extends AbstractExporter
         return json_encode(self::transformCollection($docsy->getCollection($collection)),JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
 
-    protected static function transformCollection(Collection $collection): array
+    protected static function transformCollection(Collection $collection, array $options = []): array
     {
         return [
             'info' => [
