@@ -3,6 +3,7 @@
 namespace Docsy;
 
 use Docsy\Utility\Exporters\AbstractExporter;
+use Docsy\Utility\Generators\AbstractGenerator;
 use Docsy\Utility\Importers\AbstractImporter;
 use Docsy\Utility\Traits\ArrayJsonSerialization;
 use Docsy\Utility\Traits\HasCollections;
@@ -43,13 +44,13 @@ class Docsy implements \JsonSerializable
     /**
      * Export All Collection a file, or multiple files
      *
-     * @param string $formatter The Export Format, Currently Supported ["postman", "openapi.json", "openapi.yaml" and "json"]
+     * @param string $formatter The Export Format
      * @param bool $single_file Optional, if the format is set to "json" save the whole docsy to a single file or to multiple files @Default: false
      * @param string|null $save_dir The dir to save files to
      * @return void
      * @throws Exception
      */
-    public function export(string $formatter, bool $single_file = true, ?string $save_dir = null) : void
+    public function export(string $formatter, array $options = [], bool $single_file = true, ?string $save_dir = null) : void
     {
         $formatters = config('docsy.formatters.exporters');
         $formatter_class = $formatters[$formatter] ?? null;
@@ -61,14 +62,45 @@ class Docsy implements \JsonSerializable
         if (!$single_file) {
             mkdir($save_dir . '/Docsy_'. date('Y_m_d_h_i_s'));
             foreach ($this->collections as $collection) {
-                $collection->export($formatter,$save_dir . '/Docsy_'. date('Y_m_d_h_i_s') );
+                $collection->export($formatter,$options,$save_dir . '/Docsy_'. date('Y_m_d_h_i_s') );
             }
         } else {
             /* @var AbstractExporter $exporter */
             $exporter = new $formatter_class();
 
-            $save_path = $save_dir . '/Docsy_'. date('Y_m_d_h_i_s') .'.' . $exporter::$export_file_ext;
-            $data = $exporter::export($this);
+            $data = $exporter::export($this, options: $options);
+            file_put_contents($save_dir . '/Docsy_'. date('Y_m_d_h_i_s') .'.' . $exporter::file_ext(), $data);
+        }
+    }
+    /**
+     * Export All Collection a file, or multiple files
+     *
+     * @param string $formatter The Generation Format
+     * @param bool $single_file Optional, if the format is set to "json" save the whole docsy to a single file or to multiple files @Default: false
+     * @param string|null $save_dir The dir to save files to
+     * @return void
+     * @throws Exception
+     */
+    public function generate(string $formatter, array $options = [], bool $single_file = true, ?string $save_dir = null) : void
+    {
+        $formatters = config('docsy.formatters.generators');
+        $formatter_class = $formatters[$formatter] ?? null;
+        if ($formatter_class == null)
+            throw new Exception("Formatter '$formatter' not found");
+
+        if ($save_dir == null) $save_dir = rtrim(config('docsy.export_path'),'/');
+
+        if (!$single_file) {
+            mkdir($save_dir . '/Docsy_'. date('Y_m_d_h_i_s'));
+            foreach ($this->collections as $collection) {
+                $collection->generate($formatter,save_dir: $save_dir . '/Docsy_'. date('Y_m_d_h_i_s') );
+            }
+        } else {
+            /* @var AbstractGenerator $generator */
+            $generator = new $formatter_class();
+
+            $save_path = $save_dir . '/Docsy_'. date('Y_m_d_h_i_s') .'.' . $generator::$export_file_ext;
+            $data = $generator::generate($this, $options);
             file_put_contents($save_path, $data);
         }
     }
@@ -81,7 +113,7 @@ class Docsy implements \JsonSerializable
      * @return void
      * @throws Exception
      */
-    public function import(string $formatter, string $dir_or_file_path, bool $is_docsy_object_import = false) : void
+    public function import(string $formatter, string $dir_or_file_path, array $options = []) : void
     {
         $formatters = config('docsy.formatters.importers');
         $formatter = $formatters[$formatter] ?? null;
@@ -106,7 +138,7 @@ class Docsy implements \JsonSerializable
             );
         else $files = [$dir_or_file_path];
 
-        $importer::import($is_docsy_object_import, ...$files);
+        $importer::import($options, ...$files);
     }
 
     public function summary(): array

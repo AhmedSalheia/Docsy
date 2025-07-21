@@ -34,7 +34,7 @@ trait HasGlobals
         return $key? $this->globals[$key] : $this->globals;
     }
 
-    public function addGlobal(string $location, string $name, mixed $value, string $description = '', bool $required = false)
+    public function addGlobal(string $location, string $name, mixed $value, string $description = '', bool $required = false): static
     {
         if (!$this->hasGlobal($location,$name))
         {

@@ -67,9 +67,6 @@ dump($requires_auth_req->run()->response);
 
 // exporting:
 //$docsy->export('json', true);
-//$docsy->collection()->savePostmanAs('./exports/postman_collection.json');
-//$docsy->collection()->saveOpenApiAs('./exports/openapi_collection.json');
-//$docsy->collection()->saveOpenApiAs('./exports/openapi_collection.yaml');
 
 // importing:
 //$docsy->import('json','./exports/Docsy_2025_07_17_01_44_02');

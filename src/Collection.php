@@ -4,6 +4,7 @@ namespace Docsy;
 
 use Docsy\Utility\Enums\ParamLocation;
 use Docsy\Utility\Exporters\AbstractExporter;
+use Docsy\Utility\Generators\AbstractGenerator;
 use Docsy\Utility\Param;
 use Docsy\Utility\Traits\ArrayJsonSerialization;
 use Docsy\Utility\Traits\HasContent;
@@ -107,14 +108,15 @@ class Collection implements JsonSerializable
     }
 
     /**
-     * Export All Collection a file, or multiple files
+     * Export a Collection to a file
      *
-     * @param string $formatter The Export Format, Currently Supported ["postman", "openapi.json", "openapi.yaml" and "json"]
+     * @param string $formatter The Export Format
+     * @param array $options
      * @param string|null $save_dir The dir to save files to
      * @return void
      * @throws Exception
      */
-    public function export(string $formatter, ?string $save_dir = null) : void
+    public function export(string $formatter, array $options = [], ?string $save_dir = null) : void
     {
         $formatters = config('docsy.formatters.exporters');
         $formatter_class = $formatters[$formatter] ?? null;
@@ -129,8 +131,36 @@ class Collection implements JsonSerializable
         if (!file_exists($save_dir))
             mkdir($save_dir);
 
-        $save_path = $save_dir . '/' . $this->name . '.' . $formatter . '.' . $exporter::$export_file_ext;
-        $data = $exporter::export(Docsy::getInstance(), $this->id);
+        $save_path = $save_dir . '/' . $this->name . '.' . $formatter . '.' . $exporter::file_ext();
+        $data = $exporter::export(Docsy::getInstance(), $this->id, $options);
+        file_put_contents($save_path, $data);
+    }
+    /**
+     * generate a Collection doc file
+     *
+     * @param string $formatter The Generation Format
+     * @param array $options
+     * @param string|null $save_dir The dir to save files to
+     * @return void
+     * @throws Exception
+     */
+    public function generate(string $formatter, array $options = [], ?string $save_dir = null) : void
+    {
+        $formatters = config('docsy.formatters.generators');
+        $formatter_class = $formatters[$formatter] ?? null;
+        if ($formatter_class == null)
+            throw new Exception("Formatter '$formatter' not found");
+
+        /* @var AbstractGenerator $generator */
+        $generator = new $formatter_class();
+
+        if ($save_dir == null) $save_dir = rtrim(config('docsy.generate_path'),'/');
+
+        if (!file_exists($save_dir))
+            mkdir($save_dir);
+
+        $save_path = $save_dir . '/' . $this->name . '.' . $formatter . '.' . $generator::file_ext();
+        $data = $generator::generate(Docsy::getInstance(), $this->id, $options);
         file_put_contents($save_path, $data);
     }
 

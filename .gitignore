@@ -9,6 +9,7 @@
 /exports
 /future
 /cache
+/generated
 /.phpunit.cache
 .DS_Store
 

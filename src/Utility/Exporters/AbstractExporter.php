@@ -9,7 +9,7 @@ use Docsy\Utility\interfaces\Exporter;
 
 abstract class AbstractExporter implements Exporter
 {
-    public static string $export_file_ext = 'json';
+    protected static string $export_file_ext = 'json';
 
     public static function file_ext(): string
     {

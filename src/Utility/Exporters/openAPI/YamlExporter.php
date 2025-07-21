@@ -7,7 +7,7 @@ use Symfony\Component\Yaml\Yaml;
 
 class YamlExporter extends OpenApiAbstractExporter
 {
-    public static string $export_file_ext = 'yaml';
+    protected static string $export_file_ext = 'yaml';
     public static function export(Docsy $docsy, string $collection = "", array $options = []): string
     {
         if ($collection == "")

@@ -9,14 +9,14 @@ use Docsy\Request;
 
 class JsonExporter extends AbstractExporter
 {
-    public static string $export_file_ext = 'json';
+    protected static string $export_file_ext = 'json';
 
     public static function export(Docsy $docsy, string $collection = "", array $options = []): string
     {
        return json_encode($collection === '' ? $docsy : $docsy->getCollection($collection),JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
 
-    protected static function transformCollection(Collection $collection): array
+    protected static function transformCollection(Collection $collection, array $options = []): array
     {
         return [];
     }

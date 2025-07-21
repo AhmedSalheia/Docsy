@@ -4,10 +4,13 @@ namespace Docsy\Utility\Generators;
 
 use Docsy\Collection;
 use Docsy\Docsy;
+use Docsy\Folder;
+use Docsy\Request;
+use Docsy\Utility\Variable;
 
 class HtmlGenerator extends AbstractGenerator
 {
-    public static function generate(Docsy $docsy, array $options = []): string
+    public static function generate(Docsy $docsy, string $collection = "", array $options = []): string
     {
         ob_start();
         ?>
@@ -32,5 +35,20 @@ class HtmlGenerator extends AbstractGenerator
     protected function transformCollection(Collection $collection, array $options = []): string|array
     {
         return [];
+    }
+
+    protected static function transformVariables(Variable $variable, array $options = []): string
+    {
+        // TODO: Implement transformVariables() method.
+    }
+
+    protected static function transformFolder(Folder $folder, int $level = 1, array $options = []): string
+    {
+        // TODO: Implement transformFolder() method.
+    }
+
+    protected static function transformRequest(Request $request, int $level = 1, array $options = []): string
+    {
+        // TODO: Implement transformRequest() method.
     }
 }
