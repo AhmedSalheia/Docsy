@@ -56,8 +56,7 @@ class Collection implements JsonSerializable
      */
     public function setAuth(Request $auth): static
     {
-        var_dump($auth->name);
-        if (!($this->hasAuth() && $auth === $this->auth))
+        if (!is_null($this->auth) && $auth->id !== $this->auth?->id)
             throw new Exception("Auth already set");
 
         $this->auth = $auth;
@@ -70,6 +69,18 @@ class Collection implements JsonSerializable
     }
     public function getAuth(): ?Request
     {
+        if (is_null($this->auth))
+        {
+            $items = $this->flatten(Request::class);
+            foreach ($items as $item)
+            {
+                if($item->is_auth) {
+                    $this->setAuth($item);
+                    return $item;
+                }
+            }
+        }
+
         return $this->auth;
     }
 
@@ -83,6 +94,11 @@ class Collection implements JsonSerializable
     public function hasAuth() : bool
     {
         return !is_null($this->getAuth());
+    }
+
+    public function resolve(string $id_or_path)
+    {
+        
     }
 
     /**

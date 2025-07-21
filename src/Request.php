@@ -83,9 +83,9 @@ class Request implements JsonSerializable
 
     public function setGlobals(): static
     {
-        if ($this->getCollection())
+        if ($this->collection())
         {
-            $globals = $this->getCollection()?->globals();
+            $globals = $this->collection()?->globals();
 
             $this->headerParams = array_merge($this->headerParams, $globals['headers'] ?? []);
             $this->bodyParams = array_merge($this->bodyParams, $globals['body'] ?? []);
@@ -93,7 +93,7 @@ class Request implements JsonSerializable
         }
         return $this;
     }
-    public function getCollection(): ?Collection
+    public function collection(): ?Collection
     {
         if ($this->collection !== null)
             return $this->collection;
@@ -102,10 +102,14 @@ class Request implements JsonSerializable
 
         while ($parent !== null) {
             if ($parent instanceof Collection) {
+
                 $this->collection = $parent;
-                $this->collection->setAuth($this);
-                $this->setGlobals();
                 $this->scheme = preg_split('/:\/\//', $parent->baseUrl, -1, PREG_SPLIT_NO_EMPTY)[0];
+                $this->setGlobals();
+
+                if($this->is_auth)
+                    $this->collection->setAuth($this);
+
                 return $this->collection;
             }
             $parent = $parent->getParent();
@@ -115,7 +119,7 @@ class Request implements JsonSerializable
     }
     public function getBaseUrl(): ?string
     {
-        return $this->getCollection()?->baseUrl;
+        return $this->collection()?->baseUrl;
     }
     private function getPath($uri): array
     {
@@ -160,10 +164,6 @@ class Request implements JsonSerializable
      */
     public function asAuth(bool $is_auth = true): static
     {
-        if ($this->getCollection())
-            if (!$this->getCollection()->hasAuth() && $this->is_auth)
-                $this->getCollection()->setAuth($this);
-
         $this->is_auth = $is_auth;
         $this->requires_auth = $is_auth ? false : $this->requires_auth;
         return $this;

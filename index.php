@@ -50,8 +50,8 @@ $docsy->getCollection()
             ->add(new Request('get','/api/user/data?sort=-age&filter=age,25', 'Get User Data with sorting and filters'))
             ->add(
                 (new Folder('Auth'))
-                    ->add((new Request('post','/auth','Login'))->asAuth())
-                    ->add($requires_auth_req = (new Request('get','/api/requires_auth','requires_auth')))
+                    ->add((new Request('post','/auth','auth'))->asAuth())
+                    ->add($requires_auth_req = (new Request('get','/requires_auth','requires_auth')))
             )
     );
 
