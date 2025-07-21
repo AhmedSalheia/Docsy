@@ -11,7 +11,7 @@ return [
 
     'examples_path' => env('DOCSY_EXAMPLES_PATH', __DIR__ . '/../../cache/examples'),
     "export_path" => env('DOCSY_EXPORT_PATH', __DIR__ . '/../../exports'),
-    "generate_path" => env('DOCSY_EXPORT_PATH', __DIR__ . '/../../generated'),
+    "generate_path" => env('DOCSY_EXPORT_PATH', __DIR__ . '/../../exports/generated'),
 
     "auth" => [
         "scheme" => env('DOCSY_AUTH_SCHEME','bearer'),

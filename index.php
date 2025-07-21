@@ -46,17 +46,16 @@ $docsy->getCollection()
                     ->add(new Request('get','/api/user/register','Register'))
             )
     )->add(
-        (new Folder('User', requires_auth: true))
-            ->add(new Request('get','/api/user/data?sort=-age&filter=age,25', 'Get User Data with sorting and filters'))
-            ->add(
-                (new Folder('Auth'))
-                    ->add($auth = (new Request('get','/auth','auth'))->asAuth())
-                    ->add($requires_auth_req = (new Request('get','/requires_auth','requires_auth')))
-            )
+        (new Folder('Auth'))
+            ->add($auth = (new Request('get','/auth','auth'))->asAuth())
+            ->add($requires_auth_req = (new Request('get','/requires_auth','requires_auth')))
     );
 
 // check auth flow:
-dump($requires_auth_req->run()->response);
+//dump($requires_auth_req->run()->response);
+
+// generate markdown
+$docsy->generate('md');
 
 // getting collections by id, name or chain
 //$userFolders = array_keys($docsy->getCollection()->get('User'));

@@ -6,6 +6,7 @@ use Docsy\Collection;
 use Docsy\Folder;
 use Docsy\Request;
 use Docsy\Utility\interfaces\Generator;
+use Docsy\Utility\Param;
 use Docsy\Utility\Variable;
 
 abstract class AbstractGenerator implements Generator
@@ -14,7 +15,7 @@ abstract class AbstractGenerator implements Generator
 
     public static function file_ext(): string
     {
-        return self::$generated_file_ext;
+        return static::$generated_file_ext;
     }
 
     abstract protected static function transformCollection(Collection $collection, array $options = []) : string;
@@ -31,4 +32,5 @@ abstract class AbstractGenerator implements Generator
     abstract protected static function transformFolder(Folder $folder, int $level = 1, array $options = []): string;
 
     abstract protected static function transformRequest(Request $request, int $level = 1, array $options = []): string;
+    abstract protected static function transformParam(Param $param, array $options = []): string;
 }

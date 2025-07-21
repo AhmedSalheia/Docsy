@@ -88,7 +88,7 @@ class Docsy implements \JsonSerializable
         if ($formatter_class == null)
             throw new Exception("Formatter '$formatter' not found");
 
-        if ($save_dir == null) $save_dir = rtrim(config('docsy.export_path'),'/');
+        if ($save_dir == null) $save_dir = rtrim(config('docsy.generate_path'),'/');
 
         if (!$single_file) {
             mkdir($save_dir . '/Docsy_'. date('Y_m_d_h_i_s'));
@@ -99,8 +99,8 @@ class Docsy implements \JsonSerializable
             /* @var AbstractGenerator $generator */
             $generator = new $formatter_class();
 
-            $save_path = $save_dir . '/Docsy_'. date('Y_m_d_h_i_s') .'.' . $generator::$export_file_ext;
-            $data = $generator::generate($this, $options);
+            $save_path = $save_dir . '/Docsy_'. date('Y_m_d_h_i_s') .'.' . $generator::file_ext();
+            $data = $generator::generate($this,options: $options);
             file_put_contents($save_path, $data);
         }
     }
