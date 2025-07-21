@@ -3,6 +3,7 @@
 /.nova
 /.vscode
 /.zed
+/cache
 
 /vendor
 /node_modules
