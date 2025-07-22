@@ -12,6 +12,10 @@ abstract class OpenApiAbstractExporter extends AbstractExporter
 {
     public static array $components = [
         "schemas" => [],
+        "parameters" => [],
+        "requestBody" => [],
+        "responses" => [],
+        "headers" => [],
         'securitySchemes' => [
             'bearerAuth' => [
                 'type' => 'http',
@@ -32,6 +36,36 @@ abstract class OpenApiAbstractExporter extends AbstractExporter
             'paths' => self::transformContent($collection->content()),
             'components' => self::transformComponents(),
         ];
+    }
+    protected static function transformFolder(Folder $folder, array $options = []): array
+    {
+        return self::transformContent($folder->content());
+    }
+
+    protected static function transformRequest(Request $request, array $options = []): array
+    {
+        $arr_request = [];
+        $uri = self::transformRequestUrl($request->getBaseUrl(), $request->path);
+
+        $method = strtolower($request->method->value);
+
+        $requestBody = self::transformRequestBody($request->bodyParams);
+
+        $arr_request[$uri][$method] = [
+            'summary' => $request->name ?: $uri,
+            'description' => $request->description,
+            'parameters' => self::transformParameters(array_merge($request->pathParams, $request->queryParams, $request->headerParams)),
+            'responses' => self::transformRequestExamples($request->examples),
+        ];
+
+
+        if (empty($requestBody)) {
+            $arr_request[$uri][$method]['requestBody'] = $requestBody;
+        }
+
+        $arr_request[$uri][$method] = array_merge($arr_request[$uri][$method], self::transformRequestAuth($request->requires_auth));
+
+        return $arr_request;
     }
 
     protected static function transformParameters(array $params): array
@@ -93,37 +127,6 @@ abstract class OpenApiAbstractExporter extends AbstractExporter
         return [];
     }
 
-    protected static function transformFolder(Folder $folder, array $options = []): array
-    {
-        return self::transformContent($folder->content());
-    }
-
-    protected static function transformRequest(Request $request, array $options = []): array
-    {
-        $arr_request = [];
-        $uri = self::transformRequestUrl($request->getBaseUrl(), $request->path);
-
-        $method = strtolower($request->method->value);
-
-        $requestBody = self::transformRequestBody($request->bodyParams);
-
-        $arr_request[$uri][$method] = [
-            'summary' => $request->name ?: $uri,
-            'description' => $request->description,
-            'parameters' => self::transformParameters(array_merge($request->pathParams, $request->queryParams)),
-            'responses' => self::transformRequestExamples($request->examples),
-        ];
-
-
-        if (empty($requestBody)) {
-            $arr_request[$uri][$method]['requestBody'] = $requestBody;
-        }
-
-        $arr_request[$uri][$method] = array_merge($arr_request[$uri][$method], self::transformRequestAuth($request->requires_auth));
-
-        return $arr_request;
-    }
-
     protected static function transformRequestUrl(string $base_url, array $path, array $queryParams = [], array $pathParams = [], array $options = []): array | string
     {
         return array_map(fn ($path_part) => is_a($path_part,Param::class) ? "{" . $path_part->name . "}" : $path_part, $path);
@@ -175,7 +178,7 @@ abstract class OpenApiAbstractExporter extends AbstractExporter
     }
     protected static function transformComponents() : array
     {
-        return [];
+        return self::$components;
     }
 
     protected static function defineRef(string $ref_name, array $ref_data): string
