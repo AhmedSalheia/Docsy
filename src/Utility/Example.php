@@ -112,6 +112,8 @@ class Example implements JsonSerializable
      */
     protected function buildHttpRequest(): array
     {
+        $this->request->setGlobals();
+
         $baseUrl = str_replace(["http://", "https://"],'',rtrim($this->request->getBaseUrl()??'', '/'));
         $url = $this->request->scheme . "://";
 
@@ -123,8 +125,6 @@ class Example implements JsonSerializable
             elseif(!empty($pathPart)) $url .= ltrim($pathPart, '/') . '/';
         }
         $url = rtrim($url, '/');
-
-        $this->request->setGlobals();
 
         $headers = array_merge(...array_values(array_map(fn ($header) => [$header->name => $header->value], $this->request->headerParams)));
 

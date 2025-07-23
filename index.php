@@ -48,14 +48,14 @@ $docsy->getCollection()
     )->add(
         (new Folder('Auth'))
             ->add($auth = (new Request('get','/auth','auth'))->asAuth())
-            ->add($requires_auth_req = (new Request('get','/requires_auth','requires_auth')))
+            ->add(($requires_auth_req = (new Request('get','/requires_auth','requires_auth', requires_auth: true))))
     );
 
 // check auth flow:
-//dump($requires_auth_req->run()->response);
+$requires_auth_req->snap("Example01");
 
 // generate markdown
-$docsy->generate('md');
+//$docsy->generate('md');
 
 // getting collections by id, name or chain
 //$userFolders = array_keys($docsy->getCollection()->get('User'));
@@ -65,7 +65,7 @@ $docsy->generate('md');
 //dump($docsy->summary());
 
 // exporting:
-//$docsy->export('json', true);
+$docsy->export('openapi.json', single_file: false);
 
 // importing:
 //$docsy->import('json','./exports/Docsy_2025_07_17_01_44_02');

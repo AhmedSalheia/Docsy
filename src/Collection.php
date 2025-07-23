@@ -131,7 +131,7 @@ class Collection implements JsonSerializable
         if (!file_exists($save_dir))
             mkdir($save_dir);
 
-        $save_path = $save_dir . '/' . $this->name . '.' . $formatter . '.' . $exporter::file_ext();
+        $save_path = $save_dir . '/' . $this->name . '.' . str_replace(".","_",$formatter) . '.' . $exporter::file_ext();
         $data = $exporter::export(Docsy::getInstance(), $this->id, $options);
         file_put_contents($save_path, $data);
     }
@@ -159,7 +159,7 @@ class Collection implements JsonSerializable
         if (!file_exists($save_dir))
             mkdir($save_dir);
 
-        $save_path = $save_dir . '/' . $this->name . '.' . $formatter . '.' . $generator::file_ext();
+        $save_path = $save_dir . '/' . $this->name . '.' . str_replace(".","_",$formatter) . '.' . $generator::file_ext();
         $data = $generator::generate(Docsy::getInstance(), $this->id, $options);
         file_put_contents($save_path, $data);
     }

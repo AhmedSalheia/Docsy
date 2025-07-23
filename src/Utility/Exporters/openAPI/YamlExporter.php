@@ -13,6 +13,6 @@ class YamlExporter extends OpenApiAbstractExporter
         if ($collection == "")
             throw new \InvalidArgumentException('OpenAPI YamlExporter only meant to export single collection at a time');
 
-        return Yaml::dump($docsy->getCollection($collection),10, 2,Yaml::DUMP_OBJECT_AS_MAP | Yaml::DUMP_EMPTY_ARRAY_AS_SEQUENCE);
+        return Yaml::dump(self::transformCollection($docsy->getCollection($collection)),10, 2,Yaml::DUMP_OBJECT_AS_MAP | Yaml::DUMP_EMPTY_ARRAY_AS_SEQUENCE);
     }
 }

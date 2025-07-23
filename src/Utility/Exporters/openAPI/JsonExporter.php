@@ -11,6 +11,6 @@ class JsonExporter extends OpenApiAbstractExporter
         if ($collection == "")
             throw new \InvalidArgumentException('OpenAPI JsonExporter only meant to export single collection at a time');
 
-        return json_encode($docsy->getCollection($collection),JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        return json_encode(self::transformCollection($docsy->getCollection($collection)),JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
 }

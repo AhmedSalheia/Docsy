@@ -30,7 +30,7 @@ abstract class AbstractExporter implements Exporter
             }
 
             return [];
-        }, $content);
+        }, array_values($content));
     }
     abstract protected static function transformFolder(Folder $folder, array $options = []): array;
 
@@ -40,6 +40,6 @@ abstract class AbstractExporter implements Exporter
     abstract protected static function transformRequestHeaders(array $headers, array $options): array;
     abstract protected static function transformRequestBody(array $body, array $options = []): array;
     abstract protected static function transformRequestAuth(bool $auth, array $options = []): array;
-    abstract protected static function transformRequestExamples(array $examples, array $options = []): array;
+    abstract protected static function transformRequestExamples(array $examples, array $options = []): array | object;
     abstract protected static function transformVariables(array $variables, array $options = []): array;
 }
