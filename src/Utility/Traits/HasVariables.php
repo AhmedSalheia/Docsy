@@ -49,13 +49,13 @@ trait HasVariables
             $this->variables[$variable_name_or_id] :
             $this->getVariableByName($variable_name_or_id);
     }
-    private function getVariableByName(string $variable_name) : ?Variable
+    private function getVariableByName(string $variable_name) : Variable|array|null
     {
         $variables = array_filter($this->variables, function(Variable $var) use ($variable_name){
             return $var->name == $variable_name;
         });
 
-        return array_shift($variables);
+        return count($variables) > 1 ? $variables : array_shift($variables);
     }
     public function getVariables(): array
     {

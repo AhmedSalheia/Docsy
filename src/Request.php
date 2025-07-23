@@ -108,7 +108,7 @@ class Request implements JsonSerializable
             if ($parent instanceof Collection) {
 
                 $this->collection = $parent;
-                $this->scheme = preg_split('/:\/\//', $parent->baseUrl, -1, PREG_SPLIT_NO_EMPTY)[0];
+                $this->scheme = parse_url($parent->baseUrl, PHP_URL_SCHEME);
                 $this->setGlobals();
 
                 if($this->is_auth && !$this->collection->hasAuth())
