@@ -76,7 +76,9 @@ trait HasParams
     }
     public function addParam(ParamLocation $paramLocation, string | Param| array $param, string $description = '', bool $required = false, mixed $value = null) : static
     {
-        if ($this->hasParamName($paramLocation,$param_name = is_array($param) ? $param['name'] : (is_string($param) ? $param : $param->name)))
+        $param_name = is_array($param) ? $param['name'] : (is_string($param) ? $param : $param->name);
+
+        if ($this->hasParamName($paramLocation,$param_name))
         {
             $param = $this->getParamByName($paramLocation, $param_name);
             $param->description = $description ?: $param->description;

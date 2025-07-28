@@ -27,7 +27,7 @@ return [
     "formatters" => [
         "exporters" => [
             "json" => \Docsy\Utility\Exporters\JsonExporter::class,
-            "postman" => \Docsy\Utility\Exporters\PostmanExporter::class,
+            "postman" => \Docsy\Utility\Exporters\Postman21Exporter::class,
             "openapi.json" => \Docsy\Utility\Exporters\openAPI\JsonExporter::class,
             "openapi.yaml" => \Docsy\Utility\Exporters\openAPI\YamlExporter::class,
             "openapi.yml" => \Docsy\Utility\Exporters\openAPI\YamlExporter::class,
@@ -35,6 +35,7 @@ return [
 
         "importers" => [
             "json" => \Docsy\Utility\Importers\JsonImporter::class,
+            "postman" => \Docsy\Utility\Importers\Postman21Importer::class
         ],
 
         "generators" => [

@@ -181,7 +181,10 @@ class Example implements JsonSerializable
                 [
                     'status' => $res->getReasonPhrase(),
                     'code' => $res->getStatusCode(),
-                    'headers' => $res->getHeaders(),
+                    'headers' => array_map(
+                        fn ($header) => $header[0],
+                        $res->getHeaders()
+                    ),
                     'body' => json_decode((string) $res->getBody(),true)
                 ]
             );
@@ -193,7 +196,10 @@ class Example implements JsonSerializable
                     [
                         'status' => $e->getResponse()->getReasonPhrase(),
                         'code' => $e->getResponse()->getStatusCode(),
-                        'headers' => $e->getResponse()->getHeaders(),
+                        'headers' => array_map(
+                            fn ($header) => $header[0],
+                            $e->getResponse()->getHeaders()
+                        ),
                         'body' => json_decode((string)$e->getResponse()->getBody(), true)
                     ]
                 );
@@ -221,7 +227,6 @@ class Example implements JsonSerializable
         $request = $this->buildHttpRequest();
         $this->execute_at = time();
         $this->sendHttpRequest($request);
-        $this->setResponse($this->response);
         $this->response_time = time() - $this->execute_at;
 
         return $this;
