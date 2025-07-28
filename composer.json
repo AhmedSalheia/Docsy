@@ -9,7 +9,7 @@
     "autoload": {
         "psr-4": {
             "Docsy\\": "src/",
-            "Docsy\\Tests\\": "tests/"
+            "Tests\\": "tests/"
         },
         "files": [
             "./helpers.php"
@@ -26,9 +26,6 @@
         "symfony/yaml": "^7.3",
         "guzzlehttp/guzzle": "^7.9"
     },
-    "require-dev": {
-        "phpunit/phpunit": "^11.5"
-    },
     "scripts": {
         "test": "phpunit"
     },
@@ -38,5 +35,13 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "require-dev": {
+        "pestphp/pest": "^3.8"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
 }
