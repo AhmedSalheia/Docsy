@@ -9,50 +9,51 @@ use Docsy\Utility\Enums\ParamLocation;
 
 $docsy = Docsy::getInstance();
 
-$docsy->addCollection('Collection01', 'This is a default Collection')
-    ->addCollection('Collection02', 'This is a default Collection');
-
-$docsy->getCollection()
-    ->setVersion('1.1.0')
-    ->setBaseUrl('http://slimapp.test/api')
-    ->addVariables([
-        [
-            'name' => 'api_key',
-            'value' => 'xyz123',
-            'type' => 'secret',
-            'description' => 'Personal API token',
-            'disabled' => true
-        ]
-    ])->addVariable([
-        "name" => 'token',
-        'value' => 'exsklasgpajslgasgjalsgafasfslajslgjlaj',
-        'type' => 'secret',
-        'description' => 'Authorization token'
-    ])->addGlobalHeader('Accept', 'application/json')
-    ->addGlobalHeader('Content-Type', 'application/json')
-    ->addGlobalHeader('Access-Control-Allow-Origin', 'https://api.example.com')
-
-    ->addGlobalQueryParam('sort', '-age', 'This is a sort query param')
-
-    ->add(
-        (new Request('get','/api/data/{resource?:something here}?sort=-age', 'Get Resource Data', requires_auth: true))
-            ->editParam(ParamLocation::Path,'resource','the resource to get data for',true,false)
-    )->add(
-        (new Folder('User', requires_auth: true))
-            ->add(new Request('get','/api/user/data?sort=-age&filter=age,25', 'Get User Data with sorting and filters'))
-            ->add(
-                (new Folder('Auth'))
-                    ->add(new Request('get','/api/user/login','Login'))
-                    ->add(new Request('get','/api/user/register','Register'))
-            )
-    )->add(
-        (new Folder('Auth'))
-            ->add($auth = (new Request('get','/auth','auth'))->asAuth())
-            ->add(($requires_auth_req = (new Request('get','/requires_auth','requires_auth', requires_auth: true))))
-    );
+//$docsy->addCollection('Collection01', 'This is a default Collection')
+//    ->addCollection('Collection02', 'This is a default Collection');
+//
+//$docsy->getCollection()
+//    ->setVersion('1.1.0')
+//    ->setBaseUrl('http://slimapp.test/api')
+//    ->addVariables([
+//        [
+//            'name' => 'api_key',
+//            'value' => 'xyz123',
+//            'type' => 'secret',
+//            'description' => 'Personal API token',
+//            'disabled' => true
+//        ]
+//    ])->addVariable([
+//        "name" => 'token',
+//        'value' => 'exsklasgpajslgasgjalsgafasfslajslgjlaj',
+//        'type' => 'secret',
+//        'description' => 'Authorization token'
+//    ])->addGlobalHeader('Accept', 'application/json')
+//    ->addGlobalHeader('Content-Type', 'application/json')
+//    ->addGlobalHeader('Access-Control-Allow-Origin', 'https://api.example.com')
+//
+//    ->addGlobalQueryParam('sort', '-age', 'This is a sort query param')
+//
+//    ->add(
+//        (new Request('get','/api/data/{resource?:user}?sort=-age', 'Get Resource Data', requires_auth: true))
+//            ->editParam(ParamLocation::Path,'resource','the resource to get data for',true)
+//            ->addBodyParam('hi', "some param", false, "there")
+//    )->add(
+//        (new Folder('User', requires_auth: true))
+//            ->add(new Request('get','/api/user/data?sort=-age&filter=age,25', 'Get User Data with sorting and filters'))
+//            ->add(
+//                (new Folder('Auth'))
+//                    ->add(new Request('get','/api/user/login','Login'))
+//                    ->add(new Request('get','/api/user/register','Register'))
+//            )
+//    )->add(
+//        (new Folder('Auth'))
+//            ->add($auth = (new Request('get','/auth','auth'))->asAuth())
+//            ->add(($requires_auth_req = (new Request('get','/requires_auth','requires_auth', requires_auth: true))))
+//    );
 
 // check auth flow:
-$requires_auth_req->snap("Example01");
+//$requires_auth_req->snap("Example01");
 
 // generate markdown
 //$docsy->generate('md');
@@ -65,10 +66,15 @@ $requires_auth_req->snap("Example01");
 //dump($docsy->summary());
 
 // exporting:
-$docsy->export('openapi.json', single_file: false);
+//$docsy->export('openapi.json', single_file: false);
+//$docsy->export('postman');
 
 // importing:
 //$docsy->import('json','./exports/Docsy_2025_07_17_01_44_02');
+$docsy->import('postman', './exports/Docsy_2025_07_23_05_00_07');
+
+dump($docsy->collections());
+exit();
 
 // sending API request:
 

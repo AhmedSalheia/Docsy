@@ -10,17 +10,24 @@ trait HasCollections
     /** @var Collection[] $collections */
     private array $collections = [];
 
-    public function addCollection(string | Collection $collection = null, string $description = '', string $version = "1.0.0"): static
+    public function addCollection(string | Collection $collection = null, string $description = '', string $version = "1.0.0", bool $override = false): static
     {
         if ($collection == null) {
             $collection = config('docsy.default_collection.name');
             $description = config('docsy.default_collection.description');
             $version = config('docsy.default_collection.version');
         }
-        $collection = is_a($collection, Collection::class) ? $collection : new Collection($collection, $description, $version);
 
-        if (!$this->hasCollectionID($collection->id)) {
+        if (!$this->hasCollection(is_string($collection) ? $collection : $collection->name)) {
+            $collection = is_string($collection) ? new Collection($collection, $description, $version) : $collection;
+
             $this->collections[$collection->id] = $collection;
+
+        } elseif ($override) {
+
+            $id = $this->getCollection(is_string($collection) ? $collection : $collection->name)->id;
+            if (is_a($collection, Collection::class))
+                $this->collections[$id] = $collection->setID($id);
         }
 
         return $this;

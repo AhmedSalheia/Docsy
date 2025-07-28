@@ -79,6 +79,7 @@ trait HasContent
         $items = array_filter($this->content, function (Request|Folder $item) use ($name) {
             return $item->name === $name;
         });
+
         return count($items) == 1 ? array_shift($items) : $items;
     }
 
@@ -128,7 +129,7 @@ trait HasContent
     private function hasName(string $name): bool
     {
         $items = $this->getByName($name);
-        return count($items) > 0;
+        return (bool) $items;
     }
 
     public function count(string $class_name): int

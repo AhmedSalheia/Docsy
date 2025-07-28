@@ -10,7 +10,7 @@ use Docsy\Utility\Example;
 use Docsy\Utility\Param;
 use Docsy\Utility\Variable;
 
-class PostmanExporter extends AbstractExporter
+class Postman21Exporter extends AbstractExporter
 {
     public static function export(Docsy $docsy, string $collection = "",array $options = []): string
     {
@@ -45,15 +45,17 @@ class PostmanExporter extends AbstractExporter
 
     protected static function transformRequest(Request $request, array $options = []): array
     {
+        $request->setGlobals();
+
         return [
             'name' => $request->name,
             'description' => $request->description,
             'request' => [
                 'method' => strtoupper($request->method->value),
-                'header' => self::transformRequestHeaders($request->headerParams),
                 'url' => self::transformRequestUrl($request->getBaseUrl(), $request->path, $request->queryParams, $request->pathParams),
+                'header' => self::transformRequestHeaders($request->headerParams),
                 'body' => self::transformRequestBody($request->bodyParams),
-                "auth" => self::transformRequestAuth($request->requires_auth),
+                "auth" => self::transformRequestAuth($request->requires_auth, ["token" => $request->collection()->getAccessToken()]),
                 "responses" => self::transformRequestExamples($request->examples)
             ],
         ];
@@ -63,22 +65,20 @@ class PostmanExporter extends AbstractExporter
     {
         $variables = array_map(fn($param) => [
             'key' => $param->name,
-            'value' => $param->value ?? '',
+            'value' => (string) $param->value ,
             'description' => $param->description,
             'required' => $param->required,
-        ], $pathParams);
+        ], array_values($pathParams));
 
         $path = array_map(
             fn ($path_part) => is_a($path_part, Param::class) ? ":".$path_part->name : $path_part,
             $path
         );
 
-        $base_url = preg_split('/:\\\\/', $base_url,1);
-
         return [
             'raw' => implode('/', [$base_url, ...$path]),
-            "scheme" => $base_url[0],
-            'host' => explode('.', $base_url[1]),
+            "scheme" => parse_url($base_url, PHP_URL_SCHEME),
+            'host' => explode('.', parse_url($base_url, PHP_URL_HOST)),
             'path' => $path,
             'variable' => $variables,
             'query' => array_map(
@@ -88,21 +88,22 @@ class PostmanExporter extends AbstractExporter
                     'type' => self::postmanType($param->type ?: gettype($param->value)),
                     'description' => $param->description,
                     'required' => $param->required,
+                    'disabled' => $param->disabled,
                 ],
-                $queryParams
+                array_values($queryParams)
             )
         ];
     }
 
-    protected static function transformRequestHeaders(array $headers, array $options): array
+    protected static function transformRequestHeaders(array $headers, array $options = []): array
     {
         if (empty($headers)) {
             return [];
         }
 
         return array_map(
-            fn($header) => ['key' => $header->name, 'value' => $header->value, 'description' => $header->description],
-            $headers
+            fn(Param $header) => ['key' => $header->name, 'value' => (string)($header->value), 'description' => $header->description, 'disabled' => $header->disabled],
+            array_values($headers)
         );
     }
 
@@ -120,7 +121,7 @@ class PostmanExporter extends AbstractExporter
                 'type' => 'text',
                 'description' => $param->description,
                 'disabled' => !$param->required,
-            ], $body),
+            ], array_values($body)),
         ];
     }
 
@@ -130,7 +131,7 @@ class PostmanExporter extends AbstractExporter
             "type" => "bearer",
             "bearer" => [
                 "key" => "token",
-                "value" => "{{token}}"
+                "value" => $options['token'] ?? '{{token}}'
             ]
         ] : [];
     }
@@ -141,10 +142,19 @@ class PostmanExporter extends AbstractExporter
             "name" => $example->name,
             "originalRequest" => self::transformRequest($example->request),
             "status" => $example->response->status,
-            "code" => $example->response->status_code,
-            "headers" => $example->response->headers,
+            "code" => $example->response->code,
+            "header" => array_map(
+                fn($header, $value) => [
+                    "key" =>  $header,
+                    "value" =>  $value,
+                    "description" => "",
+                    "disabled" => false
+                ],
+                array_keys($example->response->headers),
+                array_values($example->response->headers),
+            ),
             "body" => json_encode($example->response->body, true),
-        ], $examples);
+        ], array_values($examples));
     }
 
     protected static function transformVariables(array $variables, array $options = []): array
@@ -152,11 +162,11 @@ class PostmanExporter extends AbstractExporter
         return array_map(function (Variable $variable) {
             return [
                 'key' => $variable->name,
-                'value' => $variable->value,
+                'value' => (string)($variable->value),
                 'type' => self::postmanType($variable->type ?? gettype($variable->value)),
                 'description' => $variable->description,
             ];
-        }, $variables);
+        }, array_values($variables));
     }
 
     protected static function postmanType($type): string

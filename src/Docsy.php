@@ -50,7 +50,7 @@ class Docsy implements \JsonSerializable
      * @return void
      * @throws Exception
      */
-    public function export(string $formatter, array $options = [], bool $single_file = true, ?string $save_dir = null) : void
+    public function export(string $formatter, array $options = [], bool $single_file = false, ?string $save_dir = null) : void
     {
         $formatters = config('docsy.formatters.exporters');
         $formatter_class = $formatters[$formatter] ?? null;
@@ -116,12 +116,13 @@ class Docsy implements \JsonSerializable
     public function import(string $formatter, string $dir_or_file_path, array $options = []) : void
     {
         $formatters = config('docsy.formatters.importers');
-        $formatter = $formatters[$formatter] ?? null;
-        if ($formatter == null)
+        $formatter_class = $formatters[$formatter] ?? null;
+
+        if ($formatter_class == null)
             throw new Exception("Formatter '$formatter' not found");
 
         /* @var AbstractImporter $importer */
-        $importer = new $formatter();
+        $importer = new $formatter_class();
 
         if (!file_exists($dir_or_file_path))
             throw new Exception("Directory or file '$dir_or_file_path' not found");
